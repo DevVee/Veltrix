@@ -617,6 +617,39 @@ export async function apiKioskPIN(pin: string): Promise<{ type:'time-in'|'time-o
   return { type, employee, message:`${employee.fullName} — ${type === 'time-in' ? 'Time In' : 'Time Out'} recorded` }
 }
 
+// ─── Kiosk RFID ───────────────────────────────────────────────────────────────
+export async function apiKioskRFID(code: string): Promise<{ type:'time-in'|'time-out'; employee: Employee; message: string }> {
+  await delay()
+  const employees = ls<Employee>(K.employees)
+  const employee = employees.find(e => e.rfidTag === code && e.status === 'active')
+  if (!employee) throw new Error('Card not recognized. Please contact HR.')
+
+  const today = ds(new Date())
+  const now = new Date().toISOString()
+  const todayRec = ls<AttendanceRecord>(K.attendance).find(a => a.employeeId === employee.id && a.date === today)
+  const type: 'time-in'|'time-out' = (todayRec?.timeIn && !todayRec.timeOut) ? 'time-out' : 'time-in'
+  const shift = ls<WorkShift>(K.shifts).find(s => s.id === employee.shiftId)
+
+  if (type === 'time-in') {
+    let minutesLate = 0; let status: AttendanceRecord['status'] = 'present'
+    if (shift) {
+      const [ih, im] = shift.timeIn.split(':').map(Number)
+      const expected = new Date(); expected.setHours(ih, im + shift.graceMinutes, 0, 0)
+      if (new Date() > expected) { minutesLate = Math.round((Date.now() - expected.getTime()) / 60000); status = 'late' }
+    }
+    await apiUpsertAttendance({ employeeId:employee.id, employeeName:employee.fullName, employeeNo:employee.employeeNo, date:today, timeIn:now, status, minutesLate, overtimeMinutes:0, nightDiffMinutes:0, source:'kiosk' })
+  } else {
+    const list = ls<AttendanceRecord>(K.attendance)
+    const idx = list.findIndex(a => a.employeeId === employee.id && a.date === today)
+    if (idx >= 0) {
+      let overtimeMinutes = 0
+      if (shift) { const [oh,om] = shift.timeOut.split(':').map(Number); const exp = new Date(); exp.setHours(oh,om,0,0); if (new Date() > exp) overtimeMinutes = Math.round((Date.now() - exp.getTime())/60000) }
+      list[idx] = { ...list[idx], timeOut:now, overtimeMinutes }; lsSet(K.attendance, list)
+    }
+  }
+  return { type, employee, message:`${employee.fullName} — ${type === 'time-in' ? 'Time In' : 'Time Out'} recorded` }
+}
+
 export async function apiGetTodayHoliday(): Promise<Holiday|null> { await delay(); return ls<Holiday>(K.holidays).find(h => h.date === ds(new Date())) ?? null }
 
 // ─── Leaves ───────────────────────────────────────────────────────────────────
@@ -757,7 +790,7 @@ export async function apiPayrollSummaryByMonth(): Promise<{ month:string; gross:
 export async function apiGetAuditLogs(limit = 200): Promise<AuditLog[]> { await delay(); return ls<AuditLog>(K.auditLogs).slice(0, limit) }
 
 // ─── Company ──────────────────────────────────────────────────────────────────
-export function getCompanySettings(): CompanySettings { return lsGet<CompanySettings>(K.company) ?? { name:'TenPayroll Corp', tagline:'', address:'', contact:'', email:'', tin:'', payPeriod:'bi-monthly' } }
+export function getCompanySettings(): CompanySettings { return lsGet<CompanySettings>(K.company) ?? { name:'Ten Foundation Philippines Inc.', tagline:'', address:'', contact:'', email:'', tin:'', payPeriod:'bi-monthly' } }
 export function saveCompanySettings(s: CompanySettings): void { lsSet(K.company, s) }
 
 // ─── types re-export ──────────────────────────────────────────────────────────

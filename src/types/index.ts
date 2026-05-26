@@ -91,7 +91,8 @@ export interface Employee {
   dailyRate: number                   // computed or stored daily rate
   payFrequency: PayFrequency
   // ── Identification ────────────────────────────────────────────────────────
-  pinCode: string          // 4-digit PIN for kiosk
+  pinCode?: string         // legacy PIN (no longer used by kiosk)
+  rfidTag?: string         // RFID card UID for kiosk scan
   photoUrl?: string
   sssNo: string
   philhealthNo: string

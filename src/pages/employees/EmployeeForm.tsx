@@ -16,7 +16,7 @@ const BLANK: FormData = {
   position:'', department:'', employmentType:'regular', status:'active',
   hireDate: new Date().toISOString().split('T')[0],
   compensationType: 'monthly', compensationRate: 0,
-  basicSalary: 0, dailyRate: 0, payFrequency:'weekly', pinCode:'',
+  basicSalary: 0, dailyRate: 0, payFrequency:'weekly', rfidTag:'',
   sssNo:'', philhealthNo:'', pagibigNo:'', tinNo:'',
   bankName:'', bankAccount:'', shiftId:'sh-1', taxStatus:'S',
   allowances:[], emergencyContactName:'', emergencyContactPhone:'',
@@ -96,9 +96,6 @@ export function EmployeeForm() {
     setError('')
     if (!form.firstName || !form.lastName || !form.email || !form.position) {
       setError('Please fill in all required fields.'); return
-    }
-    if (!form.pinCode || form.pinCode.length !== 4) {
-      setError('PIN code must be exactly 4 digits.'); return
     }
     setSaving(true)
     try {
@@ -187,8 +184,8 @@ export function EmployeeForm() {
               <Field label="Employee No." required>
                 <input className="input-base" value={form.employeeNo} onChange={e => set('employeeNo', e.target.value)} placeholder="EMP-0001" />
               </Field>
-              <Field label="Kiosk PIN (4-digit)" required>
-                <input className="input-base" value={form.pinCode} onChange={e => set('pinCode', e.target.value.replace(/\D/g,'').slice(0,4))} placeholder="1234" maxLength={4} />
+              <Field label="RFID Card ID">
+                <input className="input-base" value={form.rfidTag ?? ''} onChange={e => set('rfidTag', e.target.value)} placeholder="Scan or type card UID…" />
               </Field>
               <Field label="Department" required>
                 <select className="input-base" value={form.department} onChange={e => set('department', e.target.value)}>
