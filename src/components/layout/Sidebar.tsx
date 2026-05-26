@@ -162,20 +162,12 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
           ${collapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
         style={{ borderBottom: `1px solid ${SB_BORDER}` }}
       >
-        {/* Logo mark — circular */}
-        <div
-          className="flex-shrink-0 flex items-center justify-center font-black text-white"
-          style={{
-            width: 32, height: 32,
-            background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-            borderRadius: '50%',
-            fontSize: 13,
-            letterSpacing: '-0.02em',
-            flexShrink: 0,
-          }}
-        >
-          V
-        </div>
+        {/* Logo mark — actual Veltrix logo */}
+        <img
+          src="/Veltrix.png"
+          alt="Veltrix"
+          style={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
+        />
 
         {!collapsed && (
           <div className="min-w-0 flex-1">
