@@ -1,504 +1,472 @@
 import { useNavigate } from 'react-router-dom'
-import {
-  Users, Clock, Banknote, BarChart2,
-  CheckCircle2, CreditCard, ArrowRight, Zap, Shield,
-} from 'lucide-react'
+import { ArrowRight, CheckCircle, Clock, FileText, Users, CreditCard } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import { useEffect, useRef } from 'react'
 
-const FEATURES = [
-  {
-    icon: Users,
-    title: 'Employee Management',
-    desc: 'Full lifecycle — hiring, transfers, contracts, separation. RFID kiosk attendance built in.',
-    color: '#7C3AED',
-    bg: '#F5F3FF',
-  },
-  {
-    icon: Banknote,
-    title: 'Philippine Payroll',
-    desc: 'Automatic SSS 2024, PhilHealth 5%, Pag-IBIG, and BIR TRAIN Law withholding computation.',
-    color: '#2563EB',
-    bg: '#EFF6FF',
-  },
-  {
-    icon: Clock,
-    title: 'Time & Attendance',
-    desc: 'RFID card reader support. Grace periods, late deductions, overtime and night differential.',
-    color: '#059669',
-    bg: '#ECFDF5',
-  },
-  {
-    icon: BarChart2,
-    title: 'Reports & Payslips',
-    desc: 'Generate payslips, government remittance reports, and analytics — one click.',
-    color: '#D97706',
-    bg: '#FFFBEB',
-  },
+/* ─── Marquee items ────────────────────────────────────────────── */
+const MARQUEE = [
+  'SSS 2024 Tables', 'PhilHealth 5%', 'Pag-IBIG / HDMF', 'BIR TRAIN Law',
+  'RFID Card Attendance', 'Overtime Pay', 'Night Differential', '13th Month Pay',
+  'Leave Management', 'Payslip Generation', 'Government Remittances', 'Audit Logs',
 ]
 
-const COMPLIANCE = [
-  { label: 'SSS 2024 Tables',   desc: 'Updated monthly contribution schedule' },
-  { label: 'PhilHealth 5%',     desc: 'Employee & employer share computation' },
-  { label: 'Pag-IBIG 2%',       desc: 'HDMF Fund contributions auto-computed' },
-  { label: 'BIR TRAIN Law',     desc: 'Tax table + withholding tax deductions' },
-]
+function Marquee() {
+  const items = [...MARQUEE, ...MARQUEE]
+  return (
+    <div style={{ overflow: 'hidden', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC', padding: '14px 0' }}>
+      <div style={{ display: 'flex', gap: 0, animation: 'marquee 28s linear infinite', width: 'max-content' }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 28px', whiteSpace: 'nowrap' }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: i % 3 === 0 ? '#2563EB' : i % 3 === 1 ? '#0D1B2A' : '#00AAFF', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
+function CountUp({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    let start = 0
+    const step = Math.ceil(target / 40)
+    const t = setInterval(() => {
+      start = Math.min(start + step, target)
+      if (ref.current) ref.current.textContent = start.toLocaleString() + suffix
+      if (start >= target) clearInterval(t)
+    }, 30)
+    return () => clearInterval(t)
+  }, [target, suffix])
+  return <span ref={ref}>0{suffix}</span>
+}
+
+/* ─── Component ────────────────────────────────────────────────── */
 export function Landing() {
   const navigate = useNavigate()
   const user = useAuthStore(s => s.user)
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', background: '#fff', color: '#111827', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'Inter, sans-serif', color: '#0D1B2A', background: '#fff', overflowX: 'hidden' }}>
 
-      {/* ─── Navbar ─────────────────────────────────────────────────────────── */}
+      <style>{`
+        @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+        @keyframes floatUp { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        .land-btn-primary { transition: background 0.15s, transform 0.12s, box-shadow 0.15s !important; }
+        .land-btn-primary:hover { background: #1A3A8F !important; transform: translateY(-1px) !important; box-shadow: 0 8px 24px rgba(37,99,235,0.35) !important; }
+        .land-btn-ghost:hover { background: #F1F5F9 !important; }
+        .feat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(13,27,42,0.10) !important; }
+        .feat-card { transition: transform 0.18s, box-shadow 0.18s; }
+      `}</style>
+
+      {/* ══ NAV ══════════════════════════════════════════════════════════ */}
       <nav style={{
         position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(255,255,255,0.94)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid #E5E7EB',
-        padding: '0 max(32px, calc((100vw - 1100px) / 2))',
-        height: 62,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 clamp(24px, 6vw, 80px)', height: 64,
+        background: 'rgba(255,255,255,0.96)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid #EEF1F6',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 900, fontSize: 14, color: '#fff', letterSpacing: '-0.02em',
-          }}>V</div>
-          <span style={{ fontWeight: 800, fontSize: 16.5, letterSpacing: '-0.035em', color: '#111827' }}>
-            Veltrix
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => navigate('/')}>
+          <img src="/Veltrix.png" alt="Veltrix" style={{ height: 36, width: 36, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: '#0D1B2A' }}>Veltrix</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {user ? (
-            <button
-              onClick={() => navigate('/dashboard')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                padding: '7px 18px', borderRadius: 7,
-                background: '#2563EB', color: '#fff',
-                fontWeight: 600, fontSize: 13.5, border: 'none', cursor: 'pointer',
-              }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#1D4ED8')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#2563EB')}
-            >
-              Go to Dashboard <ArrowRight style={{ width: 13, height: 13 }} />
+            <button className="land-btn-primary" onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 20px', borderRadius: 8, background: '#2563EB', color: '#fff', fontWeight: 600, fontSize: 13.5, border: 'none', cursor: 'pointer' }}>
+              Dashboard <ArrowRight style={{ width: 14, height: 14 }} />
             </button>
           ) : (
             <>
-              <button
-                onClick={() => navigate('/kiosk')}
-                style={{
-                  padding: '7px 16px', borderRadius: 7, border: 'none',
-                  background: 'transparent', color: '#6B7280',
-                  fontWeight: 500, fontSize: 13.5, cursor: 'pointer',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#111827' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
-              >Kiosk</button>
-              <button
-                onClick={() => navigate('/login')}
-                style={{
-                  padding: '7px 18px', borderRadius: 7, border: 'none',
-                  background: '#111827', color: '#fff',
-                  fontWeight: 600, fontSize: 13.5, cursor: 'pointer',
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#1F2937')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#111827')}
-              >Sign in</button>
+              <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{ padding: '7px 16px', borderRadius: 7, border: 'none', background: 'transparent', color: '#6B7280', fontWeight: 500, fontSize: 13.5, cursor: 'pointer' }}>Kiosk</button>
+              <button className="land-btn-primary" onClick={() => navigate('/login')} style={{ padding: '8px 20px', borderRadius: 8, background: '#0D1B2A', color: '#fff', fontWeight: 600, fontSize: 13.5, border: 'none', cursor: 'pointer' }}>Sign in</button>
             </>
           )}
         </div>
       </nav>
 
-      {/* ─── Hero ───────────────────────────────────────────────────────────── */}
-      <section style={{
-        background: 'linear-gradient(170deg, #060B18 0%, #0D1730 55%, #0F1E3A 100%)',
-        padding: 'clamp(64px,8vw,108px) max(32px, calc((100vw - 1100px) / 2)) 0',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        {/* grid overlay */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),' +
-            'linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px)',
-          backgroundSize: '64px 64px',
-        }} />
-        {/* glow blobs */}
-        <div style={{ position: 'absolute', top: -160, left: '15%', width: 700, height: 700, background: 'radial-gradient(circle, rgba(37,99,235,0.13) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: 40, right: '10%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 65%)', pointerEvents: 'none' }} />
+      {/* ══ HERO ═════════════════════════════════════════════════════════ */}
+      <section style={{ padding: 'clamp(60px,9vw,110px) clamp(24px,6vw,80px) 0', maxWidth: 1280, margin: '0 auto' }}>
 
-        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          {/* badge */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 7,
-            background: 'rgba(37,99,235,0.14)', border: '1px solid rgba(37,99,235,0.28)',
-            borderRadius: 999, padding: '5px 14px', marginBottom: 36,
-          }}>
-            <CreditCard style={{ width: 12, height: 12, color: '#60A5FA' }} />
-            <span style={{ fontSize: 11.5, fontWeight: 600, color: '#93C5FD', letterSpacing: '0.015em' }}>
-              RFID Card Attendance · Now Available
-            </span>
+        {/* Label pill */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px 5px 8px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 999, marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#2563EB', borderRadius: 999, padding: '2px 8px' }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>NEW</span>
           </div>
+          <span style={{ fontSize: 12.5, fontWeight: 500, color: '#1D4ED8' }}>RFID card attendance · now live</span>
+        </div>
 
-          <h1 style={{
-            fontSize: 'clamp(38px, 5.5vw, 76px)',
-            fontWeight: 900, lineHeight: 1.04,
-            letterSpacing: '-0.045em', color: '#F8FAFC',
-            maxWidth: 780, marginBottom: 26,
-          }}>
-            Payroll that{' '}
-            <span style={{
-              background: 'linear-gradient(135deg, #60A5FA 10%, #A78BFA 90%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              actually works
-            </span>
-            {' '}for Filipino businesses.
-          </h1>
+        {/* Headline — very editorial */}
+        <h1 style={{
+          fontSize: 'clamp(40px, 6.5vw, 82px)',
+          fontWeight: 900, lineHeight: 1.02,
+          letterSpacing: '-0.05em', color: '#0D1B2A',
+          maxWidth: 820, marginBottom: 0,
+        }}>
+          HR &amp; Payroll<br />
+          <span style={{ color: '#2563EB' }}>built right</span>{' '}
+          <span style={{ color: '#9CA3AF', fontWeight: 300, fontStyle: 'italic' }}>for the</span><br />
+          Philippines.
+        </h1>
 
-          <p style={{ fontSize: 'clamp(15px,1.6vw,18px)', color: '#8B95B8', lineHeight: 1.7, maxWidth: 580, marginBottom: 44 }}>
-            Veltrix automates your Philippine payroll — SSS, PhilHealth, Pag-IBIG, BIR TRAIN Law.
-            RFID attendance. Payslips. Government remittances. One platform that does it right.
+        {/* Subtext + CTA in a row */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 'clamp(24px,4vw,56px)', marginTop: 28, marginBottom: 56 }}>
+          <p style={{ fontSize: 'clamp(15px,1.8vw,18px)', color: '#6B7280', lineHeight: 1.7, maxWidth: 480, flex: '1 1 300px' }}>
+            Automates SSS, PhilHealth, Pag-IBIG, and BIR TRAIN Law withholding. RFID attendance. Payslips. Leave management. One platform — no spreadsheets.
           </p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 64 }}>
-            <button
-              onClick={() => navigate(user ? '/dashboard' : '/login')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '13px 26px', borderRadius: 8,
-                background: '#2563EB', color: '#fff',
-                fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
-              }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#1D4ED8')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#2563EB')}
-            >
-              {user ? 'Go to Dashboard' : 'Get started'} <ArrowRight style={{ width: 15, height: 15 }} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, flexShrink: 0 }}>
+            <button className="land-btn-primary" onClick={() => navigate(user ? '/dashboard' : '/login')} style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '13px 26px',
+              borderRadius: 9, background: '#2563EB', color: '#fff',
+              fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
+            }}>
+              {user ? 'Go to Dashboard' : 'Try Veltrix free'} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
-            <button
-              onClick={() => navigate('/kiosk')}
-              style={{
-                padding: '13px 26px', borderRadius: 8,
-                background: 'rgba(255,255,255,0.05)', color: '#B8C0D0',
-                fontWeight: 600, fontSize: 15,
-                border: '1px solid rgba(255,255,255,0.11)', cursor: 'pointer',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.09)'; (e.currentTarget as HTMLElement).style.color = '#E2E8F0' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = '#B8C0D0' }}
-            >
+            <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
+              padding: '13px 24px', borderRadius: 9, background: '#F1F5F9',
+              color: '#374151', fontWeight: 600, fontSize: 15, border: 'none', cursor: 'pointer',
+            }}>
               View Kiosk
             </button>
           </div>
+        </div>
 
-          {/* compliance stats */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px 48px', marginBottom: 56, paddingBottom: 40, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            {[
-              { n: '100%',       l: 'Philippine compliant' },
-              { n: 'SSS 2024',   l: 'Latest tables' },
-              { n: 'TRAIN Law',  l: 'BIR withholding' },
-              { n: 'RFID',       l: 'Card attendance' },
-            ].map(s => (
-              <div key={s.n} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontSize: 17, fontWeight: 800, color: '#E2E8F0', letterSpacing: '-0.03em' }}>{s.n}</span>
-                <span style={{ fontSize: 12, color: '#4B5563', fontWeight: 500 }}>{s.l}</span>
+        {/* Dashboard screenshot */}
+        <div style={{
+          position: 'relative',
+          borderRadius: '16px 16px 0 0',
+          overflow: 'hidden',
+          border: '1px solid #E2E8F0',
+          borderBottom: 'none',
+          boxShadow: '0 -4px 0 0 #E2E8F0, 0 -40px 80px rgba(13,27,42,0.08)',
+        }}>
+          {/* Browser chrome */}
+          <div style={{ height: 40, background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['#EF4444', '#F59E0B', '#22C55E'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
+            </div>
+            <div style={{ flex: 1, maxWidth: 320, margin: '0 auto', height: 24, background: '#EEF1F6', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 10.5, color: '#94A3B8', fontWeight: 500 }}>app.veltrix.ph/dashboard</span>
+            </div>
+          </div>
+          <img
+            src="/dashboard.png"
+            alt="Veltrix Dashboard"
+            style={{ width: '100%', display: 'block' }}
+          />
+        </div>
+      </section>
+
+      {/* ══ MARQUEE ══════════════════════════════════════════════════════ */}
+      <Marquee />
+
+      {/* ══ STATS ROW ════════════════════════════════════════════════════ */}
+      <section style={{ padding: 'clamp(56px,6vw,80px) clamp(24px,6vw,80px)', maxWidth: 1280, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 1, background: '#E2E8F0', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden' }}>
+          {[
+            { n: 100, suffix: '%', label: 'Philippine compliant' },
+            { n: 4, suffix: ' gov\'t deductions', label: 'auto-computed' },
+            { n: 5, suffix: ' roles', label: 'access control' },
+            { n: 0, suffix: ' spreadsheets', label: 'needed' },
+          ].map((s, i) => (
+            <div key={i} style={{ background: '#fff', padding: 'clamp(24px,3vw,36px) clamp(20px,3vw,32px)' }}>
+              <div style={{ fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 900, letterSpacing: '-0.05em', color: '#0D1B2A', lineHeight: 1 }}>
+                <CountUp target={s.n} suffix={s.suffix} />
               </div>
-            ))}
+              <div style={{ fontSize: 13, color: '#6B7280', marginTop: 6, fontWeight: 500 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ ASYMMETRIC FEATURE GRID ══════════════════════════════════════ */}
+      <section style={{ padding: '0 clamp(24px,6vw,80px) clamp(64px,7vw,96px)', maxWidth: 1280, margin: '0 auto' }}>
+
+        {/* Section label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36 }}>
+          <div style={{ height: 1, flex: 1, background: '#E2E8F0' }} />
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.14em', whiteSpace: 'nowrap' }}>What you get</span>
+          <div style={{ height: 1, flex: 1, background: '#E2E8F0' }} />
+        </div>
+
+        {/* Grid: 1 wide left + 2 stacked right */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+
+          {/* Big card — RFID Attendance */}
+          <div className="feat-card" style={{
+            gridRow: 'span 2', background: '#0D1B2A', borderRadius: 16,
+            padding: 'clamp(28px,4vw,44px)', display: 'flex', flexDirection: 'column',
+            border: '1px solid #1E3A5F', minHeight: 360,
+          }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(0,170,255,0.12)', border: '1px solid rgba(0,170,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <CreditCard style={{ width: 22, height: 22, color: '#00AAFF' }} />
+            </div>
+            <h3 style={{ fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 800, letterSpacing: '-0.03em', color: '#F8FAFC', lineHeight: 1.2, marginBottom: 12 }}>
+              RFID Card<br />Attendance
+            </h3>
+            <p style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7, flex: 1 }}>
+              Employees tap their ID card. Veltrix records the time, checks against their shift, computes grace period and late minutes — automatically. No PIN to remember, no buddy punching.
+            </p>
+            <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {['Grace period', 'Late detection', 'OT tracking', 'Night diff'].map(t => (
+                  <span key={t} style={{ fontSize: 11.5, fontWeight: 600, color: '#00AAFF', padding: '4px 10px', background: 'rgba(0,170,255,0.08)', border: '1px solid rgba(0,170,255,0.15)', borderRadius: 999 }}>{t}</span>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* ── Dashboard preview ── */}
-          <div style={{
-            background: '#111827', borderRadius: '12px 12px 0 0',
-            border: '1px solid rgba(255,255,255,0.08)', borderBottom: 'none',
-            overflow: 'hidden',
-            boxShadow: '0 -16px 80px rgba(0,0,0,0.5), 0 -4px 20px rgba(37,99,235,0.12)',
-          }}>
-            {/* browser bar */}
-            <div style={{ height: 36, background: '#1A2035', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 8 }}>
-              <div style={{ display: 'flex', gap: 5 }}>
-                {['#EF4444', '#F59E0B', '#10B981'].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c }} />)}
+          {/* Card — Philippine Payroll */}
+          <div className="feat-card" style={{ background: '#F0F7FF', borderRadius: 16, padding: 'clamp(24px,3vw,36px)', border: '1px solid #BFDBFE', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 11, background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FileText style={{ width: 20, height: 20, color: '#2563EB' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#0D1B2A', marginBottom: 8 }}>Philippine Payroll</h3>
+              <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.65 }}>SSS 2024, PhilHealth 5%, Pag-IBIG 2%, BIR TRAIN Law — computed per payroll run. Payslips generated in one click.</p>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 'auto' }}>
+              {['SSS 2024', 'PhilHealth', 'Pag-IBIG', 'BIR TRAIN'].map(t => (
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#1D4ED8', padding: '3px 9px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 999 }}>{t}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Card — HR & Leave */}
+          <div className="feat-card" style={{ background: '#F0FDF4', borderRadius: 16, padding: 'clamp(24px,3vw,36px)', border: '1px solid #BBF7D0', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 11, background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users style={{ width: 20, height: 20, color: '#059669' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#0D1B2A', marginBottom: 8 }}>HR & Leave Management</h3>
+              <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.65 }}>Full employee profiles, leave balances, overtime requests, and department approvals — in a clean, role-based interface.</p>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 'auto' }}>
+              {['Vacation', 'Sick', 'Emergency', 'Overtime'].map(t => (
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#059669', padding: '3px 9px', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 999 }}>{t}</span>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Second row — 3 equal smaller cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginTop: 16 }}>
+          {[
+            { icon: Clock, color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', title: 'Shift Management', desc: 'Define work shifts, grace minutes, rest days, and overtime thresholds per team.' },
+            { icon: CheckCircle, color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', title: 'Audit Logs', desc: 'Every action is logged — who did what, when, and what changed. Full traceability.' },
+            { icon: FileText, color: '#0891B2', bg: '#ECFEFF', border: '#A5F3FC', title: 'Reports & Analytics', desc: 'Payroll summaries, headcount, attendance rates, and government contribution reports.' },
+          ].map(c => {
+            const Icon = c.icon
+            return (
+              <div key={c.title} className="feat-card" style={{ background: c.bg, borderRadius: 16, padding: 'clamp(20px,2.5vw,28px)', border: `1px solid ${c.border}`, display: 'flex', gap: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: `${c.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  <Icon style={{ width: 18, height: 18, color: c.color }} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, color: '#0D1B2A', marginBottom: 6 }}>{c.title}</h4>
+                  <p style={{ fontSize: 12.5, color: '#6B7280', lineHeight: 1.6 }}>{c.desc}</p>
+                </div>
               </div>
-              <div style={{ flex: 1, margin: '0 14px', background: 'rgba(255,255,255,0.05)', borderRadius: 4, height: 20, display: 'flex', alignItems: 'center', padding: '0 10px' }}>
-                <span style={{ fontSize: 10, color: '#3D4A5C' }}>app.veltrix.ph/dashboard</span>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ══ PAYSLIP PREVIEW ══════════════════════════════════════════════ */}
+      <section style={{ background: '#0D1B2A', padding: 'clamp(56px,7vw,90px) clamp(24px,6vw,80px)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(40px,5vw,80px)', alignItems: 'center' }}>
+
+            {/* Left copy */}
+            <div>
+              <p style={{ fontSize: 11.5, fontWeight: 700, color: '#00AAFF', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 14 }}>Payslip</p>
+              <h2 style={{ fontSize: 'clamp(26px,3.5vw,44px)', fontWeight: 900, letterSpacing: '-0.04em', color: '#F8FAFC', lineHeight: 1.1, marginBottom: 16 }}>
+                Payslips that look<br />like they mean it.
+              </h2>
+              <p style={{ fontSize: 15.5, color: '#475569', lineHeight: 1.7, marginBottom: 28 }}>
+                Every pay run generates a clean, print-ready payslip with complete earnings, all government deductions, attendance summary, and contribution breakdown — BIR-compliant.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  'Gross pay breakdown with allowances',
+                  'SSS, PhilHealth, Pag-IBIG employee & employer shares',
+                  'BIR withholding tax (TRAIN Law)',
+                  'Attendance summary — scheduled vs present days',
+                  'Net pay clearly displayed — no ambiguity',
+                ].map(item => (
+                  <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <CheckCircle style={{ width: 15, height: 15, color: '#22C55E', flexShrink: 0, marginTop: 2 }} />
+                    <span style={{ fontSize: 13.5, color: '#94A3B8' }}>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* content */}
-            <div style={{ display: 'flex', height: 'clamp(220px,28vw,320px)' }}>
-              {/* sidebar mock */}
-              <div style={{ width: 170, background: '#0D1117', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '14px 10px', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 18 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#2563EB,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: '#fff' }}>V</div>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#E2E8F0', letterSpacing: '-0.025em' }}>Veltrix</span>
+            {/* Right — payslip card (styled after the actual screenshot shared) */}
+            <div style={{
+              background: '#fff', borderRadius: 12,
+              boxShadow: '0 32px 80px rgba(0,0,0,0.4)',
+              overflow: 'hidden', border: '1px solid #E2E8F0',
+            }}>
+              {/* Header */}
+              <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #2563EB' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 16 }}>A</div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A' }}>ACME Corporation Philippines</p>
+                    <p style={{ fontSize: 10.5, color: '#6B7280' }}>10F Skyrise Tower, BGC, Taguig City</p>
+                    <p style={{ fontSize: 10.5, color: '#6B7280' }}>(02) 8123-4567 · hr@acme.ph</p>
+                  </div>
                 </div>
-                {[['Dashboard', true], ['Employees', false], ['Attendance', false], ['Leave Mgmt', false], ['Payroll Runs', false]].map(([item, active]) => (
-                  <div key={item as string} style={{ padding: '5px 8px', borderRadius: 5, marginBottom: 2, background: active ? '#2563EB' : 'transparent', fontSize: 10.5, fontWeight: active ? 600 : 400, color: active ? '#fff' : '#4B5563' }}>
-                    {item as string}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ background: '#2563EB', color: '#fff', fontSize: 9.5, fontWeight: 700, padding: '3px 8px', borderRadius: 4, letterSpacing: '0.05em', marginBottom: 6 }}>PAYSLIP</div>
+                  <p style={{ fontSize: 10.5, fontWeight: 700, color: '#374151' }}>PAY-0102</p>
+                  <p style={{ fontSize: 10, color: '#9CA3AF' }}>May 11 – May 26, 2026</p>
+                  <p style={{ fontSize: 10, fontWeight: 600, color: '#374151' }}>Pay Date: May 31, 2026</p>
+                </div>
+              </div>
+
+              {/* Employee info */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', padding: '12px 20px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                {[
+                  ['Employee Name', 'Maria Cruz Santos'], ['Employment Type', 'Regular'],
+                  ['Employee No.', 'EMP-0001'], ['Pay Frequency', 'Bi-monthly'],
+                  ['Department', 'Human Resources'], ['Tax Status', 'ME'],
+                  ['Position', 'HR Manager'], ['Bank', 'BDO – 001234567890'],
+                ].map(([l, v]) => (
+                  <div key={l} style={{ display: 'flex', gap: 4 }}>
+                    <span style={{ fontSize: 10, color: '#9CA3AF', minWidth: 80, flexShrink: 0 }}>{l}:</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: '#0D1B2A' }}>{v}</span>
                   </div>
                 ))}
               </div>
 
-              {/* main content mock */}
-              <div style={{ flex: 1, padding: 16, background: '#0F1729', overflow: 'hidden' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', marginBottom: 12, letterSpacing: '-0.01em' }}>
-                  Good morning, Admin 👋
-                </div>
-                {/* KPI row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
-                  {[{ l: 'Employees', v: '148', c: '#7C3AED' }, { l: 'Present', v: '132', c: '#059669' }, { l: 'Pending', v: '5', c: '#D97706' }, { l: 'Payroll', v: '₱2.4M', c: '#2563EB' }].map(k => (
-                    <div key={k.l} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 7, padding: '9px 10px', border: '1px solid rgba(255,255,255,0.055)' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: `${k.c}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 7 }}>
-                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: k.c }} />
-                      </div>
-                      <div style={{ fontSize: 'clamp(12px,1.5vw,17px)', fontWeight: 800, color: '#F1F5F9', letterSpacing: '-0.03em' }}>{k.v}</div>
-                      <div style={{ fontSize: 8.5, color: '#374151', marginTop: 1 }}>{k.l}</div>
+              {/* Earnings + Deductions */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid #E2E8F0' }}>
+                <div style={{ padding: '12px 20px', borderRight: '1px solid #E2E8F0' }}>
+                  <p style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 8 }}>Earnings</p>
+                  {[['Basic Pay', '₱24,062.50'], ['Overtime Pay', '₱2,960.94'], ['Transportation', '₱1,000.00'], ['Meal', '₱750.00']].map(([l, v]) => (
+                    <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                      <span style={{ fontSize: 11, color: '#374151' }}>{l}</span>
+                      <span style={{ fontSize: 11, color: '#374151' }}>{v}</span>
                     </div>
                   ))}
-                </div>
-                {/* table + chart row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 8 }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 7, border: '1px solid rgba(255,255,255,0.055)', padding: 10 }}>
-                    <div style={{ fontSize: 9.5, fontWeight: 600, color: '#4B5563', marginBottom: 8 }}>Today's Attendance</div>
-                    {[{ n: 'Juan Dela Cruz', d: 'Engineering', s: 'Present', c: '#10B981' }, { n: 'Maria Santos', d: 'HR', s: 'Late', c: '#F59E0B' }, { n: 'Eduardo Torres', d: 'Finance', s: 'Present', c: '#10B981' }].map(r => (
-                      <div key={r.n} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{r.n[0]}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 9, fontWeight: 500, color: '#CBD5E1' }}>{r.n}</div>
-                          <div style={{ fontSize: 8, color: '#374151' }}>{r.d}</div>
-                        </div>
-                        <div style={{ fontSize: 8, fontWeight: 600, color: r.c }}>{r.s}</div>
-                      </div>
-                    ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0D1B2A' }}>Gross Pay</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0D1B2A' }}>₱28,773.44</span>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 7, border: '1px solid rgba(255,255,255,0.055)', padding: 10 }}>
-                    <div style={{ fontSize: 9.5, fontWeight: 600, color: '#4B5563', marginBottom: 8 }}>Attendance</div>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
-                      <div style={{ width: 64, height: 64, borderRadius: '50%', border: '8px solid rgba(37,99,235,0.2)', borderTopColor: '#2563EB', borderRightColor: '#10B981', transform: 'rotate(-30deg)' }} />
+                </div>
+                <div style={{ padding: '12px 20px' }}>
+                  <p style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#374151', marginBottom: 8 }}>Deductions</p>
+                  {[['Absence', '−₱3,750.00'], ['SSS Contribution', '−₱810.00'], ['PhilHealth', '−₱687.50'], ['Pag-IBIG (HDMF)', '−₱100.00'], ['Withholding Tax', '−₱3,439.86']].map(([l, v]) => (
+                    <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                      <span style={{ fontSize: 11, color: '#374151' }}>{l}</span>
+                      <span style={{ fontSize: 11, color: '#DC2626' }}>{v}</span>
                     </div>
-                    {[{ l: 'Present', c: '#10B981', v: '89%' }, { l: 'Late', c: '#F59E0B', v: '7%' }, { l: 'Absent', c: '#EF4444', v: '4%' }].map(d => (
-                      <div key={d.l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <div style={{ width: 5, height: 5, borderRadius: '50%', background: d.c }} />
-                          <span style={{ fontSize: 8.5, color: '#4B5563' }}>{d.l}</span>
-                        </div>
-                        <span style={{ fontSize: 8.5, fontWeight: 600, color: d.c }}>{d.v}</span>
-                      </div>
-                    ))}
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#DC2626' }}>Total Deductions</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#DC2626' }}>−₱8,787.36</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Net Pay */}
+              <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#EFF6FF' }}>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Net Pay</p>
+                  <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 2 }}>₱28,773.44 gross − ₱8,787.36 deductions</p>
+                </div>
+                <span style={{ fontSize: 26, fontWeight: 900, color: '#2563EB', letterSpacing: '-0.04em' }}>₱19,986.08</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Features ───────────────────────────────────────────────────────── */}
-      <section style={{ padding: 'clamp(64px,7vw,96px) max(32px, calc((100vw - 1100px) / 2))', background: '#F8FAFC' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ maxWidth: 540, marginBottom: 52 }}>
-            <p style={{ fontSize: 11.5, fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Platform</p>
-            <h2 style={{ fontSize: 'clamp(26px,3.5vw,44px)', fontWeight: 800, letterSpacing: '-0.035em', color: '#111827', lineHeight: 1.1, marginBottom: 16 }}>
-              Everything your HR team needs
-            </h2>
-            <p style={{ fontSize: 16, color: '#6B7280', lineHeight: 1.65 }}>
-              From hiring to payslip, Veltrix covers the full employee lifecycle with Philippine-specific compliance baked in from day one.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 16 }}>
-            {FEATURES.map(f => {
-              const Icon = f.icon
-              return (
-                <div
-                  key={f.title}
-                  style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: '26px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', transition: 'box-shadow 0.15s, transform 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.09)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
-                >
-                  <div style={{ width: 42, height: 42, borderRadius: 10, background: f.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                    <Icon style={{ width: 19, height: 19, color: f.color }} />
-                  </div>
-                  <h3 style={{ fontSize: 14.5, fontWeight: 700, color: '#111827', marginBottom: 7 }}>{f.title}</h3>
-                  <p style={{ fontSize: 13, color: '#6B7280', lineHeight: 1.6 }}>{f.desc}</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── PH Compliance ──────────────────────────────────────────────────── */}
-      <section style={{ padding: 'clamp(64px,7vw,88px) max(32px, calc((100vw - 1100px) / 2))', background: '#fff' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(40px,6vw,88px)', alignItems: 'center' }}>
-          <div>
-            <p style={{ fontSize: 11.5, fontWeight: 700, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Compliance</p>
-            <h2 style={{ fontSize: 'clamp(24px,3.2vw,40px)', fontWeight: 800, letterSpacing: '-0.035em', color: '#111827', lineHeight: 1.1, marginBottom: 16 }}>
-              Built for the Philippines.<br />100% compliant.
-            </h2>
-            <p style={{ fontSize: 15.5, color: '#6B7280', lineHeight: 1.7, marginBottom: 32 }}>
-              Veltrix automatically computes all mandatory Philippine government contributions and withholding tax — no manual tables, no calculation errors, no compliance risk.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {COMPLIANCE.map(c => (
-                <div key={c.label} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                    <CheckCircle2 style={{ width: 12, height: 12, color: '#16A34A' }} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{c.label}</div>
-                    <div style={{ fontSize: 12.5, color: '#9CA3AF', marginTop: 1 }}>{c.desc}</div>
-                  </div>
-                </div>
-              ))}
+      {/* ══ ROLE-BASED ACCESS ════════════════════════════════════════════ */}
+      <section style={{ padding: 'clamp(56px,7vw,88px) clamp(24px,6vw,80px)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(32px,5vw,72px)', alignItems: 'center' }}>
+            <div style={{ flex: '1 1 340px' }}>
+              <p style={{ fontSize: 11.5, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 14 }}>Access Control</p>
+              <h2 style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: '-0.04em', color: '#0D1B2A', lineHeight: 1.1, marginBottom: 16 }}>
+                Five roles.<br />Every level covered.
+              </h2>
+              <p style={{ fontSize: 15, color: '#6B7280', lineHeight: 1.7, marginBottom: 0 }}>
+                Super Admin, HR Admin, Payroll Officer, Department Head, and Employee. Each role sees exactly what they need — nothing more, nothing less.
+              </p>
             </div>
-          </div>
-
-          {/* payslip card */}
-          <div style={{ background: 'linear-gradient(145deg, #060B18 0%, #0D1730 100%)', borderRadius: 16, padding: 28, border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 24px 64px rgba(0,0,0,0.22)' }}>
-            <div style={{ marginBottom: 18 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Sample Payslip · May 2026</p>
-              <p style={{ fontSize: 17, fontWeight: 800, color: '#F8FAFC', letterSpacing: '-0.025em' }}>Juan Dela Cruz</p>
-              <p style={{ fontSize: 12, color: '#4B5563', marginTop: 2 }}>Software Engineer · Engineering</p>
-            </div>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 14, marginBottom: 14 }}>
+            <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
-                { l: 'Basic Salary',        v: '₱35,000',   t: 'income' },
-                { l: 'Overtime Pay',         v: '+₱2,800',  t: 'income' },
-                { l: 'SSS Contribution',     v: '−₱1,400',  t: 'deduct' },
-                { l: 'PhilHealth 5%',        v: '−₱875',    t: 'deduct' },
-                { l: 'Pag-IBIG 2%',         v: '−₱200',    t: 'deduct' },
-                { l: 'Withholding Tax',      v: '−₱3,240',  t: 'deduct' },
+                { role: 'Super Admin',     color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', desc: 'Full system access — settings, audit logs, all modules' },
+                { role: 'HR Admin',        color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', desc: 'Employees, attendance, leaves, schedules' },
+                { role: 'Payroll Officer', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0', desc: 'Payroll runs, payslips, reports' },
+                { role: 'Department Head', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', desc: 'Team attendance, leave & OT approvals' },
+                { role: 'Employee',        color: '#6B7280', bg: '#F8FAFC', border: '#E2E8F0', desc: 'Own payslips and leave balance' },
               ].map(r => (
-                <div key={r.l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 12.5, color: '#4B5563' }}>{r.l}</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: r.t === 'deduct' ? '#F87171' : '#CBD5E1' }}>{r.v}</span>
+                <div key={r.role} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: r.bg, border: `1px solid ${r.border}`, borderRadius: 10 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: r.color, minWidth: 128, flexShrink: 0 }}>{r.role}</span>
+                  <span style={{ fontSize: 12.5, color: '#6B7280' }}>{r.desc}</span>
                 </div>
               ))}
             </div>
-            <div style={{ background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.24)', borderRadius: 9, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#93C5FD' }}>Net Pay</span>
-              <span style={{ fontSize: 22, fontWeight: 900, color: '#60A5FA', letterSpacing: '-0.04em' }}>₱32,085</span>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── RFID feature callout ────────────────────────────────────────────── */}
-      <section style={{ padding: 'clamp(56px,6vw,80px) max(32px, calc((100vw - 1100px) / 2))', background: '#F8FAFC', borderTop: '1px solid #E5E7EB' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 'clamp(32px,5vw,72px)', alignItems: 'center' }}>
-          <div style={{ flex: '1 1 340px' }}>
-            <p style={{ fontSize: 11.5, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>RFID Attendance</p>
-            <h2 style={{ fontSize: 'clamp(24px,3vw,38px)', fontWeight: 800, letterSpacing: '-0.035em', color: '#111827', lineHeight: 1.1, marginBottom: 16 }}>
-              Tap to clock in.<br />No PIN to remember.
-            </h2>
-            <p style={{ fontSize: 15, color: '#6B7280', lineHeight: 1.7, marginBottom: 24 }}>
-              Your employees just tap their ID card on the RFID reader. Veltrix handles the rest — late detection, grace periods, overtime computation — automatically.
-            </p>
-            <button
-              onClick={() => navigate('/kiosk')}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 20px', borderRadius: 7, background: '#7C3AED', color: '#fff', fontWeight: 600, fontSize: 13.5, border: 'none', cursor: 'pointer' }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#6D28D9')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#7C3AED')}
-            >
-              See the Kiosk <ArrowRight style={{ width: 13, height: 13 }} />
-            </button>
-          </div>
-
-          <div style={{ flex: '1 1 280px', display: 'flex', justifyContent: 'center' }}>
-            {/* kiosk preview card */}
-            <div style={{ width: 260, background: '#0D1117', borderRadius: 16, padding: 28, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', textAlign: 'center' }}>
-              {/* pulsing rings */}
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, height: 110 }}>
-                <div style={{ position: 'absolute', width: 110, height: 110, borderRadius: '50%', border: '1.5px solid rgba(37,99,235,0.25)', animation: 'ping 2s infinite' }} />
-                <div style={{ position: 'absolute', width: 86, height: 86, borderRadius: '50%', border: '1.5px solid rgba(37,99,235,0.15)', animation: 'ping 2s 0.5s infinite' }} />
-                <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(37,99,235,0.12)', border: '1.5px solid rgba(37,99,235,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CreditCard style={{ width: 30, height: 30, color: '#60A5FA' }} />
-                </div>
-              </div>
-              <p style={{ fontSize: 16, fontWeight: 800, color: '#F8FAFC', letterSpacing: '-0.02em', marginBottom: 6 }}>Tap Your RFID Card</p>
-              <p style={{ fontSize: 11.5, color: '#374151', lineHeight: 1.5 }}>Hold your ID near the reader to record attendance</p>
-              <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E' }} />
-                <span style={{ fontSize: 10, color: '#374151', fontWeight: 500 }}>Reader active</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Security strip ──────────────────────────────────────────────────── */}
-      <section style={{ padding: '32px max(32px, calc((100vw - 1100px) / 2))', background: '#fff', borderTop: '1px solid #E5E7EB', borderBottom: '1px solid #E5E7EB' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Shield style={{ width: 16, height: 16, color: '#059669' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Data stays in the browser</span>
-            <span style={{ fontSize: 12, color: '#9CA3AF' }}>— No server, no cloud upload</span>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 28px' }}>
-            {['🇵🇭 PH Compliant', 'SSS 2024', 'PhilHealth 5%', 'Pag-IBIG 2%', 'TRAIN Law BIR'].map(t => (
-              <span key={t} style={{ fontSize: 12.5, fontWeight: 500, color: '#6B7280' }}>{t}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA ────────────────────────────────────────────────────────────── */}
-      <section style={{
-        padding: 'clamp(64px,8vw,100px) max(32px, calc((100vw - 1100px) / 2))',
-        background: 'linear-gradient(145deg, #060B18 0%, #0D1730 100%)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', top: -120, right: -80, width: 500, height: 500, background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -80, left: '20%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(37,99,235,0.10) 0%, transparent 65%)', pointerEvents: 'none' }} />
-
-        <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 24 }}>
-            <Zap style={{ width: 14, height: 14, color: '#FBBF24' }} />
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: '#FBBF24', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Streamline your HR today</span>
-          </div>
-          <h2 style={{ fontSize: 'clamp(28px,4vw,54px)', fontWeight: 900, letterSpacing: '-0.045em', color: '#F8FAFC', lineHeight: 1.04, marginBottom: 20 }}>
-            Start managing payroll the right way
+      {/* ══ CTA ══════════════════════════════════════════════════════════ */}
+      <section style={{ padding: 'clamp(56px,7vw,88px) clamp(24px,6vw,80px)', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
+          <img src="/Veltrix.png" alt="Veltrix" style={{ width: 56, height: 56, objectFit: 'contain', margin: '0 auto 20px', display: 'block' }} />
+          <h2 style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 900, letterSpacing: '-0.045em', color: '#0D1B2A', lineHeight: 1.05, marginBottom: 16 }}>
+            Ready to ditch<br />the spreadsheets?
           </h2>
-          <p style={{ fontSize: 16, color: '#6B7280', lineHeight: 1.7, marginBottom: 40 }}>
-            Built specifically for Filipino businesses. Veltrix takes care of compliance so your team can focus on people.
+          <p style={{ fontSize: 16, color: '#6B7280', lineHeight: 1.7, marginBottom: 36, maxWidth: 480, margin: '0 auto 36px' }}>
+            Veltrix is free to explore. All demo data included. Sign in with the pre-filled credentials and see it in action.
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-            <button
-              onClick={() => navigate(user ? '/dashboard' : '/login')}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 8, background: '#2563EB', color: '#fff', fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer' }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#1D4ED8')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#2563EB')}
-            >
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="land-btn-primary" onClick={() => navigate(user ? '/dashboard' : '/login')} style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '14px 30px',
+              borderRadius: 9, background: '#2563EB', color: '#fff',
+              fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
+            }}>
               {user ? 'Go to Dashboard' : 'Sign in to Veltrix'} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
-            <button
-              onClick={() => navigate('/kiosk')}
-              style={{ padding: '14px 28px', borderRadius: 8, background: 'transparent', color: '#9CA3AF', fontWeight: 600, fontSize: 15, border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = '#fff' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-            >
-              View Employee Kiosk
+            <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
+              padding: '14px 26px', borderRadius: 9, background: '#fff',
+              color: '#374151', fontWeight: 600, fontSize: 15,
+              border: '1px solid #D1D5DB', cursor: 'pointer',
+            }}>
+              Try RFID Kiosk
             </button>
           </div>
         </div>
       </section>
 
-      {/* ─── Footer ─────────────────────────────────────────────────────────── */}
-      <footer style={{ background: '#0D1117', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '22px max(32px, calc((100vw - 1100px) / 2))', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#2563EB,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: '#fff' }}>V</div>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#374151', letterSpacing: '-0.025em' }}>Veltrix</span>
+      {/* ══ FOOTER ═══════════════════════════════════════════════════════ */}
+      <footer style={{
+        display: 'flex', flexWrap: 'wrap', gap: 16,
+        alignItems: 'center', justifyContent: 'space-between',
+        padding: '22px clamp(24px,6vw,80px)',
+        background: '#0D1B2A',
+        borderTop: '1px solid #1E3A5F',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/Veltrix.png" alt="Veltrix" style={{ height: 24, width: 24, objectFit: 'contain' }} />
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#E2E8F0', letterSpacing: '-0.02em' }}>Veltrix</span>
+          <span style={{ fontSize: 12, color: '#374151' }}>· Philippine HR & Payroll</span>
         </div>
-        <p style={{ fontSize: 12, color: '#374151' }}>© {new Date().getFullYear()} Veltrix · Built for Filipino businesses</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 20px' }}>
-          {['🇵🇭 PH Compliant', 'SSS 2024', 'PhilHealth', 'TRAIN Law'].map(t => (
-            <span key={t} style={{ fontSize: 11, color: '#374151', fontWeight: 500 }}>{t}</span>
+        <p style={{ fontSize: 11.5, color: '#374151' }}>© {new Date().getFullYear()} Veltrix · Built for Filipino businesses</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
+          {['🇵🇭 PH Compliant', 'SSS 2024', 'PhilHealth 5%', 'BIR TRAIN Law'].map(t => (
+            <span key={t} style={{ fontSize: 11.5, color: '#374151', fontWeight: 500 }}>{t}</span>
           ))}
         </div>
       </footer>

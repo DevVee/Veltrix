@@ -1,26 +1,24 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, AlertCircle, ChevronDown, CheckCircle2, CreditCard, Banknote, Users } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, ArrowRight, ChevronDown } from 'lucide-react'
 import { apiLogin } from '../../lib/db'
 import { useAuthStore } from '../../store/authStore'
 
-const DEMO_ACCOUNTS = [
-  { label: 'Super Admin',     email: 'admin@acme.ph',          pass: 'admin123',   color: '#7C3AED' },
-  { label: 'HR Admin',        email: 'maria.santos@acme.ph',   pass: 'hr123',      color: '#2563EB' },
-  { label: 'Payroll Officer', email: 'ana.mendoza@acme.ph',    pass: 'payroll123', color: '#0891B2' },
-  { label: 'Dept Head',       email: 'eduardo.torres@acme.ph', pass: 'dept123',    color: '#059669' },
-]
+/* Pre-filled with Super Admin so visitors can just hit Sign In */
+const DEFAULT_EMAIL = 'admin@acme.ph'
+const DEFAULT_PASS  = 'admin123'
 
-const HERO_FEATURES = [
-  { icon: Users,    label: 'Employee Management', desc: 'Full lifecycle HR — contracts, transfers, separation' },
-  { icon: CreditCard, label: 'RFID Attendance',  desc: 'Tap your card. No PIN required.' },
-  { icon: Banknote, label: 'Philippine Payroll',  desc: 'SSS, PhilHealth, Pag-IBIG, BIR auto-computed' },
+const DEMO_ACCOUNTS = [
+  { label: 'Super Admin',     email: 'admin@acme.ph',          pass: 'admin123',   tag: 'Full access',          color: '#7C3AED' },
+  { label: 'HR Admin',        email: 'maria.santos@acme.ph',   pass: 'hr123',      tag: 'HR & employees',       color: '#2563EB' },
+  { label: 'Payroll Officer', email: 'ana.mendoza@acme.ph',    pass: 'payroll123', tag: 'Payroll processing',   color: '#0891B2' },
+  { label: 'Dept Head',       email: 'eduardo.torres@acme.ph', pass: 'dept123',    tag: 'Department oversight', color: '#059669' },
 ]
 
 export function Login() {
   const navigate  = useNavigate()
   const login     = useAuthStore(s => s.login)
-  const [form,     setForm]     = useState({ email: '', password: '' })
+  const [form,     setForm]     = useState({ email: DEFAULT_EMAIL, password: DEFAULT_PASS })
   const [showPw,   setShowPw]   = useState(false)
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
@@ -43,295 +41,296 @@ export function Login() {
   }
 
   return (
-    <div
-      className="min-h-screen flex"
-      style={{ fontFamily: 'Inter, sans-serif' }}
-    >
-      {/* ── Left: Hero panel ─────────────────────────────────────────────── */}
+    <div style={{ fontFamily: 'Inter, sans-serif', minHeight: '100vh', display: 'flex', background: '#0A0F1C' }}>
+
+      <style>{`
+        .login-input:focus { border-color: #2563EB !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important; outline: none; }
+        .login-input { transition: border-color 0.15s, box-shadow 0.15s; }
+        .demo-btn:hover { border-color: var(--c) !important; background: var(--bg) !important; }
+        @keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }
+      `}</style>
+
+      {/* ══ LEFT — Screenshot panel ══════════════════════════════════════ */}
       <div
-        className="hidden lg:flex flex-col"
+        className="hidden lg:block"
         style={{
-          width: '54%', flexShrink: 0,
-          background: 'linear-gradient(155deg, #060B18 0%, #0C1628 55%, #0F1E3A 100%)',
-          padding: '0',
-          position: 'relative', overflow: 'hidden',
+          width: '58%', flexShrink: 0, position: 'relative', overflow: 'hidden',
         }}
       >
-        {/* Background grid */}
+        {/* Dashboard screenshot fills the whole panel */}
+        <img
+          src="/dashboard.png"
+          alt="Veltrix Dashboard"
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top left',
+            filter: 'brightness(0.45)',
+          }}
+        />
+
+        {/* Gradient overlay — darkens toward right so form reads cleanly */}
         <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),' +
-            'linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(105deg, rgba(10,15,28,0.1) 0%, rgba(10,15,28,0.55) 70%, rgba(10,15,28,0.95) 100%)',
         }} />
-        {/* Glow */}
-        <div style={{ position: 'absolute', top: -100, left: -80, width: 600, height: 600, background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -60, right: -60, width: 400, height: 400, background: 'radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 65%)', pointerEvents: 'none' }} />
 
-        {/* Content wrapper */}
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', padding: '44px 52px' }}>
+        {/* Blue glow from bottom left */}
+        <div style={{
+          position: 'absolute', bottom: -80, left: -80,
+          width: 500, height: 500,
+          background: 'radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 65%)',
+          pointerEvents: 'none',
+        }} />
 
-          {/* Top: logo + back */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 64 }}>
+        {/* Content over screenshot */}
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '44px 48px' }}>
+
+          {/* Logo + back link */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => navigate('/')}>
-              <div style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 900, fontSize: 15, color: '#fff', letterSpacing: '-0.02em',
-              }}>V</div>
-              <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.035em', color: '#F8FAFC' }}>Veltrix</span>
+              <img src="/Veltrix.png" alt="Veltrix" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+              <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.035em', color: '#F8FAFC' }}>Veltrix</span>
             </div>
             <button
               onClick={() => navigate('/kiosk')}
-              style={{ fontSize: 12, fontWeight: 500, color: '#374151', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#9CA3AF')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#374151')}
+              style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.4)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.8)')}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.4)')}
             >
               ← Employee Kiosk
             </button>
           </div>
 
-          {/* Middle: headline + features */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: 11.5, fontWeight: 700, color: '#3B82F6', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>
-              HR & Payroll System
-            </p>
-            <h1 style={{
-              fontSize: 'clamp(30px,3.5vw,48px)',
-              fontWeight: 900, letterSpacing: '-0.04em',
-              color: '#F8FAFC', lineHeight: 1.07, marginBottom: 20,
+          {/* Center text */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 480 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              background: 'rgba(37,99,235,0.18)', border: '1px solid rgba(37,99,235,0.35)',
+              borderRadius: 999, padding: '5px 14px', marginBottom: 24, alignSelf: 'flex-start',
             }}>
-              The HR system your team{' '}
-              <span style={{
-                background: 'linear-gradient(135deg, #60A5FA 10%, #A78BFA 90%)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-              }}>
-                will actually use.
-              </span>
-            </h1>
-            <p style={{ fontSize: 15, color: '#6B7280', lineHeight: 1.7, marginBottom: 40, maxWidth: 440 }}>
-              Automates Philippine payroll compliance, RFID attendance, leave management, and reporting — all in one place.
-            </p>
-
-            {/* Feature bullets */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              {HERO_FEATURES.map(f => {
-                const Icon = f.icon
-                return (
-                  <div key={f.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                    <div style={{
-                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                      background: 'rgba(37,99,235,0.12)',
-                      border: '1px solid rgba(37,99,235,0.22)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Icon style={{ width: 16, height: 16, color: '#60A5FA' }} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: '#E2E8F0', marginBottom: 2 }}>{f.label}</p>
-                      <p style={{ fontSize: 12.5, color: '#4B5563', lineHeight: 1.5 }}>{f.desc}</p>
-                    </div>
-                  </div>
-                )
-              })}
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', animation: 'shimmer 2s infinite' }} />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: '#93C5FD' }}>Live demo — full data included</span>
             </div>
+
+            <h1 style={{ fontSize: 'clamp(32px,3.5vw,50px)', fontWeight: 900, letterSpacing: '-0.045em', color: '#F8FAFC', lineHeight: 1.05, marginBottom: 18 }}>
+              Philippine HR &amp; Payroll<br />
+              <span style={{ color: '#60A5FA' }}>that just works.</span>
+            </h1>
+            <p style={{ fontSize: 15.5, color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, marginBottom: 0 }}>
+              Sign in and explore the full system — employees, attendance, payroll runs, payslips, leave management, and more.
+            </p>
           </div>
 
-          {/* Bottom: compliance badges */}
-          <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <p style={{ fontSize: 10, fontWeight: 600, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Philippine Compliance</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {['SSS 2024', 'PhilHealth 5%', 'Pag-IBIG 2%', 'BIR TRAIN Law'].map(t => (
-                <div key={t} style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '4px 10px', borderRadius: 999,
-                  background: 'rgba(16,163,74,0.10)',
-                  border: '1px solid rgba(16,163,74,0.22)',
-                }}>
-                  <CheckCircle2 style={{ width: 10, height: 10, color: '#4ADE80', flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#4ADE80' }}>{t}</span>
-                </div>
-              ))}
-            </div>
+          {/* Bottom feature chips */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['SSS 2024', 'PhilHealth 5%', 'Pag-IBIG 2%', 'BIR TRAIN Law', 'RFID Kiosk'].map(t => (
+              <div key={t} style={{
+                padding: '5px 12px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.55)',
+              }}>{t}</div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* ── Right: Login form panel ───────────────────────────────────────── */}
-      <div
-        className="flex-1 flex flex-col"
-        style={{ background: '#FAFAFA', minHeight: '100vh' }}
-      >
-        {/* Mobile-only top bar */}
+      {/* ══ RIGHT — Login form ═══════════════════════════════════════════ */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: 'clamp(32px,5vw,56px) clamp(24px,5vw,56px)',
+        background: '#fff',
+        position: 'relative',
+        overflowY: 'auto',
+      }}>
+
+        {/* Mobile logo */}
         <div
-          className="lg:hidden flex items-center justify-between flex-shrink-0"
-          style={{ height: 56, padding: '0 24px', background: '#fff', borderBottom: '1px solid #E5E7EB' }}
+          className="lg:hidden"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 36, cursor: 'pointer' }}
+          onClick={() => navigate('/')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }} onClick={() => navigate('/')}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#2563EB,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 12, color: '#fff' }}>V</div>
-            <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.03em', color: '#111827' }}>Veltrix</span>
-          </div>
-          <button onClick={() => navigate('/kiosk')} style={{ fontSize: 12, color: '#9CA3AF', background: 'transparent', border: 'none', cursor: 'pointer' }}>← Kiosk</button>
+          <img src="/Veltrix.png" alt="Veltrix" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: '#0D1B2A' }}>Veltrix</span>
         </div>
 
-        {/* Form area — centered */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(32px,5vw,56px) clamp(20px,5vw,56px)' }}>
-          <div style={{ width: '100%', maxWidth: 380 }}>
+        <div style={{ width: '100%', maxWidth: 380 }}>
 
-            {/* Header */}
-            <div style={{ marginBottom: 28 }}>
-              <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: '#111827', marginBottom: 6 }}>
-                Welcome back
-              </h2>
-              <p style={{ fontSize: 14, color: '#6B7280' }}>
-                Sign in to your Veltrix workspace
+          {/* Header */}
+          <div style={{ marginBottom: 28 }}>
+            <h2 style={{ fontSize: 25, fontWeight: 800, letterSpacing: '-0.035em', color: '#0D1B2A', marginBottom: 6 }}>
+              Welcome back
+            </h2>
+            <p style={{ fontSize: 14, color: '#9CA3AF', lineHeight: 1.5 }}>
+              Sign in to your Veltrix workspace
+            </p>
+          </div>
+
+          {/* Demo banner — prominent */}
+          <div style={{
+            padding: '11px 14px', borderRadius: 9,
+            background: 'linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%)',
+            border: '1.5px solid #BFDBFE',
+            marginBottom: 22,
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+          }}>
+            <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+              <span style={{ fontSize: 11, fontWeight: 900, color: '#fff' }}>✓</span>
+            </div>
+            <div>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: '#1D4ED8', marginBottom: 2 }}>
+                Demo credentials pre-filled
+              </p>
+              <p style={{ fontSize: 11.5, color: '#4B5563', lineHeight: 1.4 }}>
+                Super Admin access · Just hit <strong>Sign In</strong> to explore the full system
               </p>
             </div>
+          </div>
 
-            {/* Error */}
-            {error && (
-              <div style={{
-                display: 'flex', alignItems: 'flex-start', gap: 10,
-                background: '#FEF2F2', border: '1px solid #FECACA',
-                borderRadius: 7, padding: '10px 13px', marginBottom: 18,
-              }}>
-                <AlertCircle style={{ width: 14, height: 14, color: '#DC2626', flexShrink: 0, marginTop: 1 }} />
-                <span style={{ fontSize: 13, color: '#991B1B' }}>{error}</span>
-              </div>
-            )}
+          {/* Error */}
+          {error && (
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: 9,
+              background: '#FEF2F2', border: '1px solid #FECACA',
+              borderRadius: 8, padding: '10px 13px', marginBottom: 16,
+            }}>
+              <AlertCircle style={{ width: 14, height: 14, color: '#DC2626', flexShrink: 0, marginTop: 1 }} />
+              <span style={{ fontSize: 13, color: '#991B1B' }}>{error}</span>
+            </div>
+          )}
 
-            {/* Form */}
-            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                  Email address
-                </label>
-                <input
-                  type="email"
-                  autoFocus
-                  autoComplete="email"
-                  placeholder="you@company.ph"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  style={{
-                    width: '100%', height: 40, padding: '0 13px',
-                    border: '1.5px solid #D1D5DB', borderRadius: 7,
-                    fontSize: 14, color: '#111827', background: '#fff',
-                    outline: 'none', boxSizing: 'border-box',
-                    transition: 'border-color 0.15s',
-                  }}
-                  onFocus={e => (e.currentTarget.style.borderColor = '#2563EB')}
-                  onBlur={e => (e.currentTarget.style.borderColor = '#D1D5DB')}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                  Password
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPw ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    autoComplete="current-password"
-                    style={{
-                      width: '100%', height: 40, padding: '0 40px 0 13px',
-                      border: '1.5px solid #D1D5DB', borderRadius: 7,
-                      fontSize: 14, color: '#111827', background: '#fff',
-                      outline: 'none', boxSizing: 'border-box',
-                      transition: 'border-color 0.15s',
-                    }}
-                    onFocus={e => (e.currentTarget.style.borderColor = '#2563EB')}
-                    onBlur={e => (e.currentTarget.style.borderColor = '#D1D5DB')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(v => !v)}
-                    tabIndex={-1}
-                    style={{
-                      position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)',
-                      background: 'transparent', border: 'none', cursor: 'pointer',
-                      color: '#9CA3AF', display: 'flex', alignItems: 'center',
-                    }}
-                  >
-                    {showPw ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
+          {/* Form */}
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                Email address
+              </label>
+              <input
+                type="email"
+                className="login-input"
+                autoComplete="email"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  height: 42, borderRadius: 7, border: 'none',
-                  background: loading ? '#93C5FD' : '#2563EB',
-                  color: '#fff', fontWeight: 700, fontSize: 14,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  marginTop: 4, transition: 'background 0.15s',
+                  width: '100%', height: 42, padding: '0 13px',
+                  border: '1.5px solid #D1D5DB', borderRadius: 8,
+                  fontSize: 14, color: '#0D1B2A', background: '#FAFAFA',
+                  boxSizing: 'border-box',
                 }}
-                onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#1D4ED8' }}
-                onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#2563EB' }}
-              >
-                {loading ? (
-                  <>
-                    <span style={{ width: 15, height: 15, border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
-                    Signing in…
-                  </>
-                ) : 'Sign In'}
-              </button>
-            </form>
-
-            {/* Demo accounts */}
-            <div style={{ marginTop: 24, borderRadius: 8, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
-              <button
-                type="button"
-                onClick={() => setShowDemo(v => !v)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '11px 14px', background: '#F9FAFB', border: 'none', cursor: 'pointer',
-                }}
-              >
-                <span style={{ fontSize: 11.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em', color: '#9CA3AF' }}>
-                  Demo Accounts
-                </span>
-                <ChevronDown style={{
-                  width: 13, height: 13, color: '#9CA3AF',
-                  transform: showDemo ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.15s',
-                }} />
-              </button>
-
-              {showDemo && (
-                <div style={{ padding: '6px 10px 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
-                  {DEMO_ACCOUNTS.map(a => (
-                    <button
-                      key={a.email}
-                      type="button"
-                      onClick={() => { setForm({ email: a.email, password: a.pass }); setError(''); setShowDemo(false) }}
-                      style={{
-                        textAlign: 'left', padding: '9px 11px',
-                        border: '1.5px solid #E5E7EB', borderRadius: 6,
-                        background: '#fff', cursor: 'pointer', transition: 'all 0.12s',
-                      }}
-                      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = a.color; el.style.background = `${a.color}10` }}
-                      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#E5E7EB'; el.style.background = '#fff' }}
-                    >
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.color, marginBottom: 5 }} />
-                      <p style={{ fontSize: 11.5, fontWeight: 700, color: '#111827', marginBottom: 1 }}>{a.label}</p>
-                      <p style={{ fontSize: 10.5, color: '#9CA3AF', fontFamily: 'monospace' }}>{a.pass}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
+              />
             </div>
 
-            {/* Footer */}
-            <p style={{ marginTop: 24, textAlign: 'center', fontSize: 11.5, color: '#D1D5DB' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPw ? 'text' : 'password'}
+                  className="login-input"
+                  value={form.password}
+                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  autoComplete="current-password"
+                  style={{
+                    width: '100%', height: 42, padding: '0 42px 0 13px',
+                    border: '1.5px solid #D1D5DB', borderRadius: 8,
+                    fontSize: 14, color: '#0D1B2A', background: '#FAFAFA',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  tabIndex={-1}
+                  style={{
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: '#9CA3AF', display: 'flex', alignItems: 'center', padding: 0,
+                  }}
+                >
+                  {showPw ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Sign in button */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                height: 44, borderRadius: 9, border: 'none',
+                background: loading ? '#93C5FD' : '#2563EB',
+                color: '#fff', fontWeight: 700, fontSize: 14.5,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginTop: 4, transition: 'background 0.15s, transform 0.1s, box-shadow 0.15s',
+              }}
+              onMouseEnter={e => { if (!loading) { (e.currentTarget as HTMLElement).style.background = '#1A3A8F'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 20px rgba(37,99,235,0.35)' } }}
+              onMouseLeave={e => { if (!loading) { (e.currentTarget as HTMLElement).style.background = '#2563EB'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' } }}
+            >
+              {loading ? (
+                <>
+                  <span style={{ width: 16, height: 16, border: '2.5px solid rgba(255,255,255,0.35)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+                  Signing in…
+                </>
+              ) : (
+                <>Sign In <ArrowRight style={{ width: 15, height: 15 }} /></>
+              )}
+            </button>
+          </form>
+
+          {/* Try different account */}
+          <div style={{ marginTop: 18, borderRadius: 9, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
+            <button
+              type="button"
+              onClick={() => setShowDemo(v => !v)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '11px 14px', background: '#F9FAFB', border: 'none', cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#6B7280' }}>Try a different role</span>
+              <ChevronDown style={{
+                width: 14, height: 14, color: '#9CA3AF',
+                transform: showDemo ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.15s',
+              }} />
+            </button>
+
+            {showDemo && (
+              <div style={{ padding: '6px 10px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {DEMO_ACCOUNTS.map(a => (
+                  <button
+                    key={a.email}
+                    type="button"
+                    onClick={() => { setForm({ email: a.email, password: a.pass }); setError(''); setShowDemo(false) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+                      padding: '9px 12px', border: '1.5px solid #E5E7EB', borderRadius: 7,
+                      background: '#fff', cursor: 'pointer', transition: 'all 0.12s',
+                    }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = a.color; el.style.background = `${a.color}0C` }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#E5E7EB'; el.style.background = '#fff' }}
+                  >
+                    <div style={{ width: 28, height: 28, borderRadius: 7, background: `${a.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.color }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A', marginBottom: 1 }}>{a.label}</p>
+                      <p style={{ fontSize: 11, color: '#9CA3AF' }}>{a.tag}</p>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: a.color, background: `${a.color}15`, padding: '2px 8px', borderRadius: 999 }}>Select</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer note */}
+          <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid #F1F5F9', textAlign: 'center' }}>
+            <p style={{ fontSize: 11.5, color: '#D1D5DB', marginBottom: 8 }}>
+              All data is stored locally in your browser — nothing is sent to a server.
+            </p>
+            <p style={{ fontSize: 11.5, color: '#D1D5DB' }}>
               © {new Date().getFullYear()} Veltrix · 🇵🇭 Built for Filipino businesses
             </p>
           </div>
