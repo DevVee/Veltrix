@@ -44,7 +44,7 @@ function getPageTitle(pathname: string): { section?: string; title: string } {
     return { section: 'Payroll', title: 'Payslip' }
   if (pathname.startsWith('/payroll/'))
     return { section: 'Payroll', title: 'Payroll Detail' }
-  return { title: 'TenPayroll' }
+  return { title: 'Veltrix' }
 }
 
 export function TopBar({ onToggle }: { onToggle: () => void; collapsed?: boolean }) {

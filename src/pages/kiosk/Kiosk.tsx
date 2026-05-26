@@ -128,7 +128,7 @@ export function Kiosk() {
             className="w-9 h-9 flex items-center justify-center font-black text-white text-base"
             style={{ background: 'linear-gradient(135deg,#2563EB 0%,#7C3AED 100%)', borderRadius: '8px' }}
           >
-            T
+            V
           </div>
           <div>
             <p className="text-white font-bold text-sm leading-none">{company.name}</p>

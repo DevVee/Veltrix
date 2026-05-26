@@ -174,7 +174,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
             flexShrink: 0,
           }}
         >
-          T
+          V
         </div>
 
         {!collapsed && (
@@ -183,7 +183,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
               className="text-white font-extrabold leading-none truncate"
               style={{ fontSize: 14, letterSpacing: '-0.025em' }}
             >
-              TenPayroll
+              Veltrix
             </p>
             <p
               className="truncate mt-0.5"
