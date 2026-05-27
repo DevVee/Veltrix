@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Plus, Clock, Edit2, Trash2 } from 'lucide-react'
+import { Plus, Clock, Edit2, Trash2, Search } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
 import { useData } from '../../hooks/useData'
 import { apiGetShifts } from '../../lib/db'
 import type { WorkShift } from '../../types'
@@ -22,6 +23,7 @@ const DEFAULT_FORM: Omit<WorkShift,'id'> = {
 
 export function ShiftList() {
   const { data: shifts, loading, refetch } = useData(() => apiGetShifts(), [])
+  const [search, setSearch] = useState('')
   const [modal, setModal] = useState(false)
   const [editing, setEditing] = useState<WorkShift | null>(null)
   const [form, setForm] = useState<Omit<WorkShift,'id'>>(DEFAULT_FORM)
@@ -84,6 +86,21 @@ export function ShiftList() {
         actions={[{ label:'New Shift', icon:Plus, onClick: openCreate }]}
       />
 
+      {/* Search */}
+      {(shifts?.length ?? 0) > 0 && (
+        <div className="card px-3 py-2.5">
+          <div className="relative" style={{ maxWidth: 320 }}>
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search shifts…"
+              className="input-base pl-8"
+            />
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center h-48">
           <div className="w-7 h-7 border-4 border-brand border-t-transparent rounded-full animate-spin" />
@@ -95,7 +112,7 @@ export function ShiftList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {shifts.map(s => (
+          {(shifts ?? []).filter(s => !search || s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
             <div key={s.id} className="card p-5 flex flex-col gap-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -105,14 +122,8 @@ export function ShiftList() {
                   </p>
                 </div>
                 <div className="flex gap-1.5">
-                  <button onClick={() => openEdit(s)}
-                    className="p-1.5 text-gray-400 hover:text-brand hover:bg-blue-50 transition-colors">
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => setDeleteConfirm(s)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <ActionIconBtn variant="edit"   icon={Edit2}  onClick={() => openEdit(s)}        title="Edit shift" />
+                  <ActionIconBtn variant="delete" icon={Trash2} onClick={() => setDeleteConfirm(s)} title="Delete shift" />
                 </div>
               </div>
 

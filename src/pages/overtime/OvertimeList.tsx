@@ -3,6 +3,7 @@ import { Clock, CheckCircle, XCircle, Search } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
 import { useData } from '../../hooks/useData'
 import { apiGetOvertime, apiUpdateOvertimeStatus } from '../../lib/db'
 import { useAuthStore } from '../../store/authStore'
@@ -163,22 +164,8 @@ export function OvertimeList() {
                       <td>
                         {r.status === 'pending' ? (
                           <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => openAction(r, 'approve')}
-                              className="flex items-center gap-1 text-[11px] font-semibold text-green-600 hover:bg-green-50 px-2 py-1 transition-colors"
-                              style={{ borderRadius: '3px' }}
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => openAction(r, 'reject')}
-                              className="flex items-center gap-1 text-[11px] font-semibold text-red-500 hover:bg-red-50 px-2 py-1 transition-colors"
-                              style={{ borderRadius: '3px' }}
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              Reject
-                            </button>
+                            <ActionIconBtn variant="green"  icon={CheckCircle} onClick={() => openAction(r, 'approve')} title="Approve" />
+                            <ActionIconBtn variant="delete" icon={XCircle}     onClick={() => openAction(r, 'reject')}  title="Reject" />
                           </div>
                         ) : (
                           <span className="text-[11px] text-gray-400">

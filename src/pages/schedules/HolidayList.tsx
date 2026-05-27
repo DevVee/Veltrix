@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Plus, Star, Trash2 } from 'lucide-react'
+import { Plus, Star, Trash2, Search } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
 import { useData } from '../../hooks/useData'
 import { apiGetHolidays } from '../../lib/db'
 import type { Holiday, HolidayType } from '../../types'
@@ -24,8 +25,12 @@ export function HolidayList() {
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Holiday | null>(null)
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear().toString())
+  const [search, setSearch] = useState('')
 
-  const filtered = (holidays ?? []).filter(h => h.date.startsWith(yearFilter))
+  const filtered = (holidays ?? []).filter(h =>
+    h.date.startsWith(yearFilter) &&
+    (!search || h.name.toLowerCase().includes(search.toLowerCase()))
+  )
   const years = [...new Set((holidays ?? []).map(h => h.date.slice(0,4)))].sort().reverse()
 
   // Group by month
@@ -82,8 +87,8 @@ export function HolidayList() {
         ))}
       </div>
 
-      {/* Year filter */}
-      <div className="flex items-center gap-3">
+      {/* Year filter + search */}
+      <div className="flex flex-wrap items-center gap-3">
         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Year:</span>
         <div className="flex gap-1">
           {(years.length ? years : [new Date().getFullYear().toString()]).map(y => (
@@ -97,6 +102,15 @@ export function HolidayList() {
               {y}
             </button>
           ))}
+        </div>
+        <div className="relative ml-2" style={{ minWidth: 200 }}>
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search holiday name…"
+            className="input-base pl-8"
+          />
         </div>
         <span className="text-xs text-gray-400 ml-auto">{filtered.length} holidays</span>
       </div>
@@ -140,10 +154,7 @@ export function HolidayList() {
                             {cfg.label}
                           </span>
                         </div>
-                        <button onClick={() => setDeleteTarget(h)}
-                          className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <ActionIconBtn variant="delete" icon={Trash2} onClick={() => setDeleteTarget(h)} title="Remove holiday" />
                       </div>
                     )
                   })}
