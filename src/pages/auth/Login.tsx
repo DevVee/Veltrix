@@ -1,17 +1,10 @@
 ﻿import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { Eye, EyeOff, LogIn, Users, Clock, Banknote, BarChart2, ChevronRight, CheckCircle } from "lucide-react"
-import { apiLogin, seedIfNeeded } from "../../lib/db"
+import { Eye, EyeOff, LogIn, Users, Clock, Banknote, BarChart2, ChevronRight } from "lucide-react"
+import { apiLogin } from "../../lib/db"
 import { useAuthStore } from "../../store/authStore"
 import { brand } from "../../config/brand"
-
-const DEMO_ACCOUNTS = [
-  { label: "Super Admin",     email: "admin@acme.ph",          password: "admin123",   color: "#7C3AED", initials: "AU" },
-  { label: "HR Admin",        email: "maria.santos@acme.ph",   password: "hr123",      color: "#2563EB", initials: "MS" },
-  { label: "Payroll Officer", email: "ana.mendoza@acme.ph",    password: "payroll123", color: "#059669", initials: "AM" },
-  { label: "Dept Head",       email: "eduardo.torres@acme.ph", password: "dept123",    color: "#D97706", initials: "ET" },
-]
 
 const FEATURES = [
   { icon: Users,     title: "Employee Management",  desc: "Complete HR profiles, departments & positions" },
@@ -30,7 +23,6 @@ export function Login() {
   const [error,   setError]   = useState("")
 
   useEffect(() => {
-    seedIfNeeded()
     if (user) navigate("/dashboard", { replace: true })
   }, [user, navigate])
 
@@ -47,10 +39,6 @@ export function Login() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const fillDemo = (acc: (typeof DEMO_ACCOUNTS)[0]) => {
-    setEmail(acc.email); setPassword(acc.password); setError("")
   }
 
   return (
@@ -124,37 +112,6 @@ export function Login() {
           <div className="mb-8">
             <h2 style={{ fontSize: 26, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.04em", marginBottom: 6 }}>Welcome back</h2>
             <p style={{ fontSize: 14, color: "#64748B" }}>Sign in to your {brand.appName} account</p>
-          </div>
-
-          <div className="mb-6">
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 10 }}>Demo Accounts</p>
-            <div className="grid grid-cols-2 gap-2">
-              {DEMO_ACCOUNTS.map(acc => (
-                <button
-                  key={acc.email}
-                  onClick={() => fillDemo(acc)}
-                  className="flex items-center gap-2.5 transition-all"
-                  style={{ padding: "9px 12px", borderRadius: 10, border: email === acc.email ? `1.5px solid ${acc.color}` : "1.5px solid #E2E8F0", background: email === acc.email ? `${acc.color}08` : "#fff", cursor: "pointer", textAlign: "left" }}
-                  onMouseEnter={e => { if (email !== acc.email) { const el = e.currentTarget as HTMLElement; el.style.borderColor = acc.color; el.style.background = `${acc.color}06` } }}
-                  onMouseLeave={e => { if (email !== acc.email) { const el = e.currentTarget as HTMLElement; el.style.borderColor = "#E2E8F0"; el.style.background = "#fff" } }}
-                >
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: acc.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{acc.initials}</div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 11.5, fontWeight: 600, color: "#0F172A", lineHeight: 1 }}>{acc.label}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      {email === acc.email && <CheckCircle style={{ width: 10, height: 10, color: acc.color }} />}
-                      <p style={{ fontSize: 10.5, color: "#94A3B8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{email === acc.email ? "Selected" : acc.email.split("@")[0]}</p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
-            <span style={{ fontSize: 12, color: "#94A3B8", fontWeight: 500 }}>or sign in manually</span>
-            <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
