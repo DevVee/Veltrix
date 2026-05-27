@@ -125,7 +125,7 @@ export function Landing() {
               borderRadius: 9, background: '#4F46E5', color: '#fff',
               fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
             }}>
-              {user ? 'Go to Dashboard' : `Try ${brand.appName} free`} <ArrowRight style={{ width: 15, height: 15 }} />
+              {user ? 'Go to Dashboard' : 'Sign in'} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
             <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
               padding: '13px 24px', borderRadius: 9, background: '#F1F5F9',
@@ -151,7 +151,7 @@ export function Landing() {
               {['#EF4444', '#F59E0B', '#22C55E'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
             </div>
             <div style={{ flex: 1, maxWidth: 320, margin: '0 auto', height: 24, background: '#EEF1F6', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 10.5, color: '#94A3B8', fontWeight: 500 }}>app.veltrix.ph/dashboard</span>
+              <span style={{ fontSize: 10.5, color: '#94A3B8', fontWeight: 500 }}>app.tenpayroll.ph/dashboard</span>
             </div>
           </div>
           <img
@@ -317,11 +317,11 @@ export function Landing() {
               {/* Header */}
               <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #4F46E5' }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 16 }}>A</div>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 16 }}>T</div>
                   <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A' }}>ACME Corporation Philippines</p>
-                    <p style={{ fontSize: 10.5, color: '#6B7280' }}>10F Skyrise Tower, BGC, Taguig City</p>
-                    <p style={{ fontSize: 10.5, color: '#6B7280' }}>(02) 8123-4567 · hr@acme.ph</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A' }}>Ten Foundation Philippines Inc.</p>
+                    <p style={{ fontSize: 10.5, color: '#6B7280' }}>Makati City, Metro Manila</p>
+                    <p style={{ fontSize: 10.5, color: '#6B7280' }}>hr@tenfoundation.ph</p>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -430,7 +430,7 @@ export function Landing() {
             Ready to ditch<br />the spreadsheets?
           </h2>
           <p style={{ fontSize: 16, color: '#6B7280', lineHeight: 1.7, marginBottom: 36, maxWidth: 480, margin: '0 auto 36px' }}>
-            {brand.appName} is free to explore. All demo data included. Sign in with the pre-filled credentials and see it in action.
+            Built exclusively for Ten Foundation Philippines Inc. — contact your system administrator to get access.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="land-btn-primary" onClick={() => navigate(user ? '/dashboard' : '/login')} style={{
@@ -445,7 +445,7 @@ export function Landing() {
               color: '#374151', fontWeight: 600, fontSize: 15,
               border: '1px solid #D1D5DB', cursor: 'pointer',
             }}>
-              Try RFID Kiosk
+              RFID Kiosk
             </button>
           </div>
         </div>

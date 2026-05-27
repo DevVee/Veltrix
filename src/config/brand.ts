@@ -77,15 +77,15 @@ export interface BrandConfig {
   documentationUrl: string
 }
 
-// ─── Default brand (TenPayroll / Veltrix) ─────────────────────────────────────
+// ─── TenPayroll — Ten Foundation Philippines Inc. ─────────────────────────────
 export const brand: BrandConfig = {
-  appName:            'Veltrix',
+  appName:            'TenPayroll',
   appTagline:         'HR & Payroll System',
-  logoUrl:            '/Veltrix.png',
+  logoUrl:            '/logo.png',
   faviconUrl:         '/favicon.png',
   version:            '2.0.0',
 
-  defaultCompanyName: 'Your Company Name',
+  defaultCompanyName: 'Ten Foundation Philippines Inc.',
 
   theme: {
     primary:      '#4F46E5',   // indigo-600
@@ -137,8 +137,8 @@ export const brand: BrandConfig = {
     exportExcel:     false,
   },
 
-  supportEmail:      'support@veltrix.app',
-  documentationUrl:  'https://docs.veltrix.app',
+  supportEmail:      'support@tenfoundation.ph',
+  documentationUrl:  'https://tenfoundation.ph',
 }
 
 export default brand
