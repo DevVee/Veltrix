@@ -256,6 +256,9 @@ export interface PayrollEntry {
   pagibigEmployer: number
   netPay: number
   remarks?: string
+  markedPaid?: boolean
+  markedPaidAt?: string
+  markedPaidBy?: string
 }
 
 // ─── Audit ────────────────────────────────────────────────────────────────────

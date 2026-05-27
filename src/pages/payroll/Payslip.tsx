@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft, Printer, CheckCircle } from 'lucide-react'
 import { useData } from '../../hooks/useData'
-import { apiGetPayrollEntry, apiGetPayrollPeriod, apiGetEmployee, getCompanySettings } from '../../lib/db'
+import { apiGetPayrollEntry, apiGetPayrollPeriod, apiGetEmployee, getCompanySettings, apiMarkEntryPaid } from '../../lib/db'
+import { useAuthStore } from '../../store/authStore'
 import { formatPeso } from '../../lib/payrollEngine'
 
 function fmtDate(d: string) {
@@ -15,10 +17,23 @@ export function Payslip() {
   const { periodId, employeeId } = useParams<{ periodId: string; employeeId: string }>()
   const navigate  = useNavigate()
   const company   = getCompanySettings()
+  const { user }  = useAuthStore()
+  const [marking, setMarking] = useState(false)
 
-  const { data: entry }    = useData(() => apiGetPayrollEntry(periodId!, employeeId!), [periodId, employeeId])
+  const { data: entry, refetch: refetchEntry } = useData(() => apiGetPayrollEntry(periodId!, employeeId!), [periodId, employeeId])
   const { data: period }   = useData(() => apiGetPayrollPeriod(periodId!), [periodId])
   const { data: employee } = useData(() => apiGetEmployee(employeeId!), [employeeId])
+
+  const handleMarkPaid = async () => {
+    if (!periodId || !employeeId || marking) return
+    setMarking(true)
+    try {
+      await apiMarkEntryPaid(periodId, employeeId, user?.name)
+      refetchEntry()
+    } finally {
+      setMarking(false)
+    }
+  }
 
   if (!entry || !period || !employee) return (
     <div className="flex items-center justify-center h-64">
@@ -62,11 +77,43 @@ export function Payslip() {
         </button>
         <button
           onClick={() => window.print()}
-          className="btn btn-primary"
+          className="btn btn-secondary"
         >
           <Printer style={{ width: 13, height: 13 }} />
           Print / Save PDF
         </button>
+
+        {/* Mark as Paid toggle */}
+        {entry?.markedPaid ? (
+          <button
+            onClick={handleMarkPaid}
+            disabled={marking}
+            className="btn"
+            style={{
+              background: '#ECFDF5', border: '1px solid #6EE7B7',
+              color: '#065F46', gap: 6,
+            }}
+            title="Click to unmark as paid"
+          >
+            <CheckCircle style={{ width: 13, height: 13, color: '#059669' }} />
+            Paid
+            {entry.markedPaidAt && (
+              <span style={{ fontSize: 10, opacity: 0.65, fontWeight: 500 }}>
+                · {new Date(entry.markedPaidAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            )}
+            <span style={{ fontSize: 10, opacity: 0.45, fontWeight: 400, marginLeft: 2 }}>(undo)</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleMarkPaid}
+            disabled={marking}
+            className="btn btn-success"
+          >
+            <CheckCircle style={{ width: 13, height: 13 }} />
+            {marking ? 'Saving…' : 'Mark as Paid'}
+          </button>
+        )}
       </div>
 
       {/* ── Payslip document ── */}
@@ -243,47 +290,24 @@ export function Payslip() {
         {/* ── Government Contributions ── */}
         <div style={{ padding: '12px 24px', borderBottom: '1px solid #e4e7ec' }}>
           <SectionTitle>Government Contributions</SectionTitle>
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: 11,
-              marginTop: 8,
-            }}
-          >
+          <table className="table-base w-full" style={{ fontSize: 11, marginTop: 8 }}>
             <thead>
-              <tr style={{ background: '#f3f4f6' }}>
-                <th style={{ padding: '5px 10px', textAlign: 'left', fontWeight: 700, color: '#6b7280', fontSize: 10 }}>
-                  Contribution
-                </th>
-                <th style={{ padding: '5px 10px', textAlign: 'center', fontWeight: 700, color: '#6b7280', fontSize: 10 }}>
-                  ID / Reference No.
-                </th>
-                <th style={{ padding: '5px 10px', textAlign: 'right', fontWeight: 700, color: '#6b7280', fontSize: 10 }}>
-                  Employee Share
-                </th>
-                <th style={{ padding: '5px 10px', textAlign: 'right', fontWeight: 700, color: '#6b7280', fontSize: 10 }}>
-                  Employer Share
-                </th>
+              <tr>
+                <th style={{ textAlign: 'left' }}>Contribution</th>
+                <th style={{ textAlign: 'center' }}>ID / Reference No.</th>
+                <th style={{ textAlign: 'right' }}>Employee Share</th>
+                <th style={{ textAlign: 'right' }}>Employer Share</th>
               </tr>
             </thead>
             <tbody>
-              {govContribs.map((g, i) => (
-                <tr
-                  key={g.label}
-                  style={{
-                    borderTop: '1px solid #f0f2f5',
-                    background: i % 2 === 1 ? '#fafbfc' : '#fff',
-                  }}
-                >
-                  <td style={{ padding: '5px 10px', fontWeight: 600, color: '#374151' }}>{g.label}</td>
-                  <td style={{ padding: '5px 10px', textAlign: 'center', color: '#6b7280' }}>
-                    {g.no || '—'}
-                  </td>
-                  <td style={{ padding: '5px 10px', textAlign: 'right', color: '#374151', fontVariantNumeric: 'tabular-nums' }}>
+              {govContribs.map(g => (
+                <tr key={g.label}>
+                  <td style={{ fontWeight: 600, color: '#374151' }}>{g.label}</td>
+                  <td style={{ textAlign: 'center', color: '#6b7280' }}>{g.no || '—'}</td>
+                  <td style={{ textAlign: 'right', color: '#374151', fontVariantNumeric: 'tabular-nums' }}>
                     {formatPeso(g.ee)}
                   </td>
-                  <td style={{ padding: '5px 10px', textAlign: 'right', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>
+                  <td style={{ textAlign: 'right', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>
                     {formatPeso(g.er)}
                   </td>
                 </tr>

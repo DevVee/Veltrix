@@ -771,6 +771,24 @@ export async function apiUpdatePayrollStatus(id:string, status:PayrollStatus, by
 export async function apiGetPayrollEntries(periodId:string): Promise<PayrollEntry[]> { await delay(); return ls<PayrollEntry>(K.payrollEntries).filter(e=>e.payrollPeriodId===periodId) }
 export async function apiGetPayrollEntry(periodId:string, employeeId:string): Promise<PayrollEntry|null> { await delay(); return ls<PayrollEntry>(K.payrollEntries).find(e=>e.payrollPeriodId===periodId&&e.employeeId===employeeId)??null }
 
+export async function apiMarkEntryPaid(periodId:string, employeeId:string, by?:string): Promise<PayrollEntry> {
+  await delay()
+  const entries = ls<PayrollEntry>(K.payrollEntries)
+  const idx = entries.findIndex(e => e.payrollPeriodId===periodId && e.employeeId===employeeId)
+  if (idx===-1) throw new Error('Payroll entry not found')
+  const nowPaid = !entries[idx].markedPaid
+  entries[idx] = {
+    ...entries[idx],
+    markedPaid:   nowPaid,
+    markedPaidAt: nowPaid ? new Date().toISOString() : undefined,
+    markedPaidBy: nowPaid ? (by ?? 'System') : undefined,
+  }
+  lsSet(K.payrollEntries, entries)
+  pushAudit({ userId:'sys', userName:by??'System', action:'update', module:'Payroll',
+    description:`${nowPaid?'Marked':'Unmarked'} payroll entry for ${entries[idx].employeeName} as paid` })
+  return entries[idx]
+}
+
 // ─── Reports ──────────────────────────────────────────────────────────────────
 export async function apiPayrollSummaryByMonth(): Promise<{ month:string; gross:number; deductions:number; net:number }[]> {
   await delay()

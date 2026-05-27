@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useData } from '../../hooks/useData'
-import { apiGetPayrollPeriod, apiGetPayrollEntries, apiUpdatePayrollStatus } from '../../lib/db'
+import { apiGetPayrollPeriod, apiGetPayrollEntries, apiUpdatePayrollStatus, apiMarkEntryPaid } from '../../lib/db'
 import { useAuthStore } from '../../store/authStore'
 import { formatPeso } from '../../lib/payrollEngine'
 
@@ -39,8 +39,21 @@ export function PayrollDetail() {
   const [search,    setSearch]    = useState('')
   const [advancing, setAdvancing] = useState(false)
 
-  const { data: period, loading: pLoading, refetch } = useData(() => apiGetPayrollPeriod(id!), [id])
-  const { data: entries, loading: eLoading }         = useData(() => apiGetPayrollEntries(id!), [id])
+  const [markingId, setMarkingId] = useState<string | null>(null)
+
+  const { data: period, loading: pLoading, refetch }          = useData(() => apiGetPayrollPeriod(id!), [id])
+  const { data: entries, loading: eLoading, refetch: refetchEntries } = useData(() => apiGetPayrollEntries(id!), [id])
+
+  const handleMarkEntryPaid = async (employeeId: string) => {
+    if (markingId) return
+    setMarkingId(employeeId)
+    try {
+      await apiMarkEntryPaid(id!, employeeId, user?.name)
+      refetchEntries()
+    } finally {
+      setMarkingId(null)
+    }
+  }
 
   const loading = pLoading || eLoading
 
@@ -235,7 +248,7 @@ export function PayrollDetail() {
                 <th className="text-right">Gross Pay</th>
                 <th className="text-right">Deductions</th>
                 <th className="text-right">Net Pay</th>
-                <th className="no-print text-right" style={{ width: 70 }}></th>
+                <th className="no-print text-right" style={{ width: 130 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -300,14 +313,46 @@ export function PayrollDetail() {
                     </td>
 
                     <td className="no-print text-right">
-                      <button
-                        onClick={() => navigate(`/payroll/${id}/payslip/${e.employeeId}`)}
-                        className="flex items-center gap-1 text-brand font-semibold hover:underline ml-auto"
-                        style={{ fontSize: 11 }}
-                      >
-                        <FileText style={{ width: 12, height: 12 }} />
-                        Payslip
-                      </button>
+                      <div className="flex flex-col items-end gap-1.5">
+                        {/* Paid status pill */}
+                        {e.markedPaid && (
+                          <span
+                            className="inline-flex items-center gap-1"
+                            style={{
+                              fontSize: 10, fontWeight: 700, color: '#065F46',
+                              background: '#ECFDF5', border: '1px solid #6EE7B7',
+                              padding: '1px 7px', borderRadius: 99,
+                            }}
+                          >
+                            <CheckCircle style={{ width: 9, height: 9 }} />
+                            Paid
+                          </span>
+                        )}
+                        <div className="flex items-center gap-2.5 ml-auto">
+                          {/* Mark Paid toggle */}
+                          <button
+                            onClick={() => handleMarkEntryPaid(e.employeeId)}
+                            disabled={markingId === e.employeeId}
+                            style={{
+                              fontSize: 10.5, fontWeight: 600,
+                              color: e.markedPaid ? '#9CA3AF' : '#059669',
+                              opacity: markingId === e.employeeId ? 0.5 : 1,
+                              cursor: markingId === e.employeeId ? 'not-allowed' : 'pointer',
+                            }}
+                            title={e.markedPaid ? 'Click to unmark as paid' : 'Click to mark as paid'}
+                          >
+                            {e.markedPaid ? 'Unmark' : 'Mark Paid'}
+                          </button>
+                          <button
+                            onClick={() => navigate(`/payroll/${id}/payslip/${e.employeeId}`)}
+                            className="flex items-center gap-1 text-brand font-semibold hover:underline"
+                            style={{ fontSize: 11 }}
+                          >
+                            <FileText style={{ width: 12, height: 12 }} />
+                            Payslip
+                          </button>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 )
