@@ -2,13 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, Settings2, AlertCircle, CalendarX, CheckCircle2, CreditCard } from 'lucide-react'
 import { apiKioskRFID, apiGetTodayHoliday, getCompanySettings } from '../../lib/db'
-import type { Employee, Holiday } from '../../types'
+import type { Holiday } from '../../types'
+
+type KioskEmployee = { id: string; fullName: string; department: string | null; position: string | null }
 
 type Phase =
   | { kind: 'idle' }
   | { kind: 'scanning' }
   | { kind: 'processing' }
-  | { kind: 'success'; type: 'time-in' | 'time-out'; employee: Employee; time: string }
+  | { kind: 'success'; type: 'time-in' | 'time-out'; employee: KioskEmployee; time: string }
   | { kind: 'error'; message: string }
 
 const AUTO_DISMISS   = 5000
