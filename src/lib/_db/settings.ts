@@ -1,4 +1,7 @@
 // ─── App Settings (Company + Deductions) ─────────────────────────────────────
+// Schema: app_settings(id TEXT PRIMARY KEY, value JSONB, updated_at TIMESTAMPTZ)
+// Keys:   'company'   → CompanySettings
+//         'deductions' → PayrollDeductionSettings
 import { supabase } from '../supabase'
 import { DEFAULT_DEDUCTION_SETTINGS } from '../payrollEngine'
 import type { CompanySettings, PayrollDeductionSettings } from '../../types'
@@ -22,17 +25,16 @@ let _deductionCache:  PayrollDeductionSettings = DEFAULT_DEDUCTION_SETTINGS
 export function getCompanySettings():   CompanySettings          { return _companyCache }
 export function getDeductionSettings(): PayrollDeductionSettings { return _deductionCache }
 
-/** Legacy sync save — no-op in Supabase mode; use the async variants instead. */
-export function saveCompanySettings(_s: CompanySettings): void {
-  _companyCache = _s
-  // Fire-and-forget async save
-  apiSaveCompanySettings(_s).catch(() => {/* silently ignored */})
+/** Legacy sync save — fires-and-forgets to Supabase; use the async variant for await. */
+export function saveCompanySettings(s: CompanySettings): void {
+  _companyCache = s
+  apiSaveCompanySettings(s).catch(() => {/* silently ignored */})
 }
 
-/** Legacy sync save — no-op in Supabase mode; use the async variants instead. */
-export function saveDeductionSettings(_s: PayrollDeductionSettings): void {
-  _deductionCache = _s
-  apiSaveDeductionSettings(_s).catch(() => {/* silently ignored */})
+/** Legacy sync save — fires-and-forgets to Supabase; use the async variant for await. */
+export function saveDeductionSettings(s: PayrollDeductionSettings): void {
+  _deductionCache = s
+  apiSaveDeductionSettings(s).catch(() => {/* silently ignored */})
 }
 
 // ── Async API ─────────────────────────────────────────────────────────────────
@@ -40,7 +42,7 @@ export async function loadCompanySettings(): Promise<CompanySettings> {
   const { data } = await supabase
     .from('app_settings')
     .select('value')
-    .eq('key', 'company_settings')
+    .eq('id', 'company')
     .single()
   const settings = (data?.value ?? DEFAULT_COMPANY) as CompanySettings
   _companyCache = settings
@@ -50,8 +52,8 @@ export async function loadCompanySettings(): Promise<CompanySettings> {
 export async function apiSaveCompanySettings(s: CompanySettings): Promise<void> {
   _companyCache = s
   await supabase.from('app_settings').upsert(
-    { key: 'company_settings', value: s },
-    { onConflict: 'key' }
+    { id: 'company', value: s },
+    { onConflict: 'id' }
   )
 }
 
@@ -59,7 +61,7 @@ export async function loadDeductionSettings(): Promise<PayrollDeductionSettings>
   const { data } = await supabase
     .from('app_settings')
     .select('value')
-    .eq('key', 'deduction_settings')
+    .eq('id', 'deductions')
     .single()
   const settings = (data?.value ?? DEFAULT_DEDUCTION_SETTINGS) as PayrollDeductionSettings
   _deductionCache = settings
@@ -69,12 +71,12 @@ export async function loadDeductionSettings(): Promise<PayrollDeductionSettings>
 export async function apiSaveDeductionSettings(s: PayrollDeductionSettings): Promise<void> {
   _deductionCache = s
   await supabase.from('app_settings').upsert(
-    { key: 'deduction_settings', value: s },
-    { onConflict: 'key' }
+    { id: 'deductions', value: s },
+    { onConflict: 'id' }
   )
 }
 
-/** Call once on app start to warm the caches. */
+/** Call once on app start to warm the caches from Supabase. */
 export async function loadAllSettings(): Promise<void> {
   await Promise.all([loadCompanySettings(), loadDeductionSettings()])
 }

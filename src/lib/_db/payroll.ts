@@ -191,7 +191,7 @@ export async function apiCreatePayrollPeriod(
   const { data: settingRow } = await supabase
     .from('app_settings')
     .select('value')
-    .eq('key', 'deduction_settings')
+    .eq('id', 'deductions')
     .single()
   const deductionSettings: PayrollDeductionSettings =
     (settingRow?.value as PayrollDeductionSettings) ?? DEFAULT_DEDUCTION_SETTINGS
