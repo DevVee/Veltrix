@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle, Clock, FileText, Users, CreditCard } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { useEffect, useRef } from 'react'
+import brand from '../../config/brand'
 
 /* ─── Marquee items ────────────────────────────────────────────── */
 const MARQUEE = [
@@ -70,8 +71,8 @@ export function Landing() {
         borderBottom: '1px solid #EEF1F6',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <img src="/TenPayroll.png" alt="TenPayroll" style={{ height: 36, width: 36, objectFit: 'contain' }} />
-          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: '#0D1B2A' }}>TenPayroll</span>
+          <img src={brand.logoUrl} alt={brand.appName} style={{ height: 36, width: 36, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: '#0D1B2A' }}>{brand.appName}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -124,7 +125,7 @@ export function Landing() {
               borderRadius: 9, background: '#4F46E5', color: '#fff',
               fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
             }}>
-              {user ? 'Go to Dashboard' : 'Try TenPayroll free'} <ArrowRight style={{ width: 15, height: 15 }} />
+              {user ? 'Go to Dashboard' : `Try ${brand.appName} free`} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
             <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
               padding: '13px 24px', borderRadius: 9, background: '#F1F5F9',
@@ -155,7 +156,7 @@ export function Landing() {
           </div>
           <img
             src="/dashboard.png"
-            alt="TenPayroll Dashboard"
+            alt={`${brand.appName} Dashboard`}
             style={{ width: '100%', display: 'block' }}
           />
         </div>
@@ -424,12 +425,12 @@ export function Landing() {
       {/* ══ CTA ══════════════════════════════════════════════════════════ */}
       <section style={{ padding: 'clamp(56px,7vw,88px) clamp(24px,6vw,80px)', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-          <img src="/TenPayroll.png" alt="TenPayroll" style={{ width: 56, height: 56, objectFit: 'contain', margin: '0 auto 20px', display: 'block' }} />
+          <img src={brand.logoUrl} alt={brand.appName} style={{ width: 56, height: 56, objectFit: 'contain', margin: '0 auto 20px', display: 'block' }} />
           <h2 style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 900, letterSpacing: '-0.045em', color: '#0D1B2A', lineHeight: 1.05, marginBottom: 16 }}>
             Ready to ditch<br />the spreadsheets?
           </h2>
           <p style={{ fontSize: 16, color: '#6B7280', lineHeight: 1.7, marginBottom: 36, maxWidth: 480, margin: '0 auto 36px' }}>
-            TenPayroll is free to explore. All demo data included. Sign in with the pre-filled credentials and see it in action.
+            {brand.appName} is free to explore. All demo data included. Sign in with the pre-filled credentials and see it in action.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="land-btn-primary" onClick={() => navigate(user ? '/dashboard' : '/login')} style={{
@@ -437,7 +438,7 @@ export function Landing() {
               borderRadius: 9, background: '#4F46E5', color: '#fff',
               fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
             }}>
-              {user ? 'Go to Dashboard' : 'Sign in to TenPayroll'} <ArrowRight style={{ width: 15, height: 15 }} />
+              {user ? 'Go to Dashboard' : `Sign in to ${brand.appName}`} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
             <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
               padding: '14px 26px', borderRadius: 9, background: '#fff',
@@ -459,11 +460,11 @@ export function Landing() {
         borderTop: '1px solid #1E3A5F',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img src="/TenPayroll.png" alt="TenPayroll" style={{ height: 24, width: 24, objectFit: 'contain' }} />
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#E2E8F0', letterSpacing: '-0.02em' }}>TenPayroll</span>
+          <img src={brand.logoUrl} alt={brand.appName} style={{ height: 24, width: 24, objectFit: 'contain' }} />
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#E2E8F0', letterSpacing: '-0.02em' }}>{brand.appName}</span>
           <span style={{ fontSize: 12, color: '#374151' }}>· Philippine HR & Payroll</span>
         </div>
-        <p style={{ fontSize: 11.5, color: '#374151' }}>© {new Date().getFullYear()} TenPayroll · Built for Filipino businesses</p>
+        <p style={{ fontSize: 11.5, color: '#374151' }}>© {new Date().getFullYear()} {brand.appName} · Built for Filipino businesses</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
           {['PH Compliant', 'SSS 2024', 'PhilHealth 5%', 'BIR TRAIN Law'].map(t => (
             <span key={t} style={{ fontSize: 11.5, color: '#374151', fontWeight: 500 }}>{t}</span>

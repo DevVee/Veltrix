@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #4F46E5;
+  --brand-primary-dark: #3730A3;
+  --brand-success: #10B981;
+  --brand-error: #EF4444;
+  --brand-warning: #F59E0B;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: #0F172A;
+  color: #F8FAFC;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Prevent all selection and context menus in kiosk */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: no-drag;
+}
+
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* PIN pad button press animation */
+.pin-key:active {
+  transform: scale(0.94);
+}
+
+/* Scrollbar hidden for kiosk aesthetic */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
+
+/* Glass card effect */
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.glass-light {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
