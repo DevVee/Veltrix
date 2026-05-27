@@ -17,7 +17,7 @@ function Marquee() {
       <div style={{ display: 'flex', gap: 0, animation: 'marquee 28s linear infinite', width: 'max-content' }}>
         {items.map((item, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 28px', whiteSpace: 'nowrap' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: i % 3 === 0 ? '#2563EB' : i % 3 === 1 ? '#0D1B2A' : '#00AAFF', flexShrink: 0 }} />
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: i % 3 === 0 ? '#4F46E5' : i % 3 === 1 ? '#0D1B2A' : '#00AAFF', flexShrink: 0 }} />
             <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{item}</span>
           </div>
         ))}
@@ -70,13 +70,13 @@ export function Landing() {
         borderBottom: '1px solid #EEF1F6',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <img src="/Veltrix.png" alt="Veltrix" style={{ height: 36, width: 36, objectFit: 'contain' }} />
-          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: '#0D1B2A' }}>Veltrix</span>
+          <img src="/TenPayroll.png" alt="TenPayroll" style={{ height: 36, width: 36, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: '#0D1B2A' }}>TenPayroll</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {user ? (
-            <button className="land-btn-primary" onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 20px', borderRadius: 8, background: '#2563EB', color: '#fff', fontWeight: 600, fontSize: 13.5, border: 'none', cursor: 'pointer' }}>
+            <button className="land-btn-primary" onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 20px', borderRadius: 8, background: '#4F46E5', color: '#fff', fontWeight: 600, fontSize: 13.5, border: 'none', cursor: 'pointer' }}>
               Dashboard <ArrowRight style={{ width: 14, height: 14 }} />
             </button>
           ) : (
@@ -92,12 +92,12 @@ export function Landing() {
       <section style={{ padding: 'clamp(60px,9vw,110px) clamp(24px,6vw,80px) 0', maxWidth: 1280, margin: '0 auto' }}>
 
         {/* Label pill */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px 5px 8px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 999, marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#2563EB', borderRadius: 999, padding: '2px 8px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px 5px 8px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 999, marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#4F46E5', borderRadius: 999, padding: '2px 8px' }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />
             <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>NEW</span>
           </div>
-          <span style={{ fontSize: 12.5, fontWeight: 500, color: '#1D4ED8' }}>RFID card attendance · now live</span>
+          <span style={{ fontSize: 12.5, fontWeight: 500, color: '#4F46E5' }}>RFID card attendance · now live</span>
         </div>
 
         {/* Headline — very editorial */}
@@ -108,7 +108,7 @@ export function Landing() {
           maxWidth: 820, marginBottom: 0,
         }}>
           HR &amp; Payroll<br />
-          <span style={{ color: '#2563EB' }}>built right</span>{' '}
+          <span style={{ color: '#4F46E5' }}>built right</span>{' '}
           <span style={{ color: '#9CA3AF', fontWeight: 300, fontStyle: 'italic' }}>for the</span><br />
           Philippines.
         </h1>
@@ -121,10 +121,10 @@ export function Landing() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, flexShrink: 0 }}>
             <button className="land-btn-primary" onClick={() => navigate(user ? '/dashboard' : '/login')} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '13px 26px',
-              borderRadius: 9, background: '#2563EB', color: '#fff',
+              borderRadius: 9, background: '#4F46E5', color: '#fff',
               fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
             }}>
-              {user ? 'Go to Dashboard' : 'Try Veltrix free'} <ArrowRight style={{ width: 15, height: 15 }} />
+              {user ? 'Go to Dashboard' : 'Try TenPayroll free'} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
             <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
               padding: '13px 24px', borderRadius: 9, background: '#F1F5F9',
@@ -155,7 +155,7 @@ export function Landing() {
           </div>
           <img
             src="/dashboard.png"
-            alt="Veltrix Dashboard"
+            alt="TenPayroll Dashboard"
             style={{ width: '100%', display: 'block' }}
           />
         </div>
@@ -209,7 +209,7 @@ export function Landing() {
               RFID Card<br />Attendance
             </h3>
             <p style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7, flex: 1 }}>
-              Employees tap their ID card. Veltrix records the time, checks against their shift, computes grace period and late minutes — automatically. No PIN to remember, no buddy punching.
+              Employees tap their ID card. TenPayroll records the time, checks against their shift, computes grace period and late minutes — automatically. No PIN to remember, no buddy punching.
             </p>
             <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -221,9 +221,9 @@ export function Landing() {
           </div>
 
           {/* Card — Philippine Payroll */}
-          <div className="feat-card" style={{ background: '#F0F7FF', borderRadius: 16, padding: 'clamp(24px,3vw,36px)', border: '1px solid #BFDBFE', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="feat-card" style={{ background: '#F0F7FF', borderRadius: 16, padding: 'clamp(24px,3vw,36px)', border: '1px solid #C7D2FE', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: 11, background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FileText style={{ width: 20, height: 20, color: '#2563EB' }} />
+              <FileText style={{ width: 20, height: 20, color: '#4F46E5' }} />
             </div>
             <div>
               <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#0D1B2A', marginBottom: 8 }}>Philippine Payroll</h3>
@@ -231,7 +231,7 @@ export function Landing() {
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 'auto' }}>
               {['SSS 2024', 'PhilHealth', 'Pag-IBIG', 'BIR TRAIN'].map(t => (
-                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#1D4ED8', padding: '3px 9px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 999 }}>{t}</span>
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, color: '#4F46E5', padding: '3px 9px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 999 }}>{t}</span>
               ))}
             </div>
           </div>
@@ -314,9 +314,9 @@ export function Landing() {
               overflow: 'hidden', border: '1px solid #E2E8F0',
             }}>
               {/* Header */}
-              <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #2563EB' }}>
+              <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #4F46E5' }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 16 }}>A</div>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 16 }}>A</div>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A' }}>ACME Corporation Philippines</p>
                     <p style={{ fontSize: 10.5, color: '#6B7280' }}>10F Skyrise Tower, BGC, Taguig City</p>
@@ -324,7 +324,7 @@ export function Landing() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ background: '#2563EB', color: '#fff', fontSize: 9.5, fontWeight: 700, padding: '3px 8px', borderRadius: 4, letterSpacing: '0.05em', marginBottom: 6 }}>PAYSLIP</div>
+                  <div style={{ background: '#4F46E5', color: '#fff', fontSize: 9.5, fontWeight: 700, padding: '3px 8px', borderRadius: 4, letterSpacing: '0.05em', marginBottom: 6 }}>PAYSLIP</div>
                   <p style={{ fontSize: 10.5, fontWeight: 700, color: '#374151' }}>PAY-0102</p>
                   <p style={{ fontSize: 10, color: '#9CA3AF' }}>May 11 – May 26, 2026</p>
                   <p style={{ fontSize: 10, fontWeight: 600, color: '#374151' }}>Pay Date: May 31, 2026</p>
@@ -377,12 +377,12 @@ export function Landing() {
               </div>
 
               {/* Net Pay */}
-              <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#EFF6FF' }}>
+              <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#EEF2FF' }}>
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Net Pay</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#4F46E5', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Net Pay</p>
                   <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 2 }}>₱28,773.44 gross − ₱8,787.36 deductions</p>
                 </div>
-                <span style={{ fontSize: 26, fontWeight: 900, color: '#2563EB', letterSpacing: '-0.04em' }}>₱19,986.08</span>
+                <span style={{ fontSize: 26, fontWeight: 900, color: '#4F46E5', letterSpacing: '-0.04em' }}>₱19,986.08</span>
               </div>
             </div>
           </div>
@@ -405,7 +405,7 @@ export function Landing() {
             <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 { role: 'Super Admin',     color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', desc: 'Full system access — settings, audit logs, all modules' },
-                { role: 'HR Admin',        color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', desc: 'Employees, attendance, leaves, schedules' },
+                { role: 'HR Admin',        color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', desc: 'Employees, attendance, leaves, schedules' },
                 { role: 'Payroll Officer', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0', desc: 'Payroll runs, payslips, reports' },
                 { role: 'Department Head', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', desc: 'Team attendance, leave & OT approvals' },
                 { role: 'Employee',        color: '#6B7280', bg: '#F8FAFC', border: '#E2E8F0', desc: 'Own payslips and leave balance' },
@@ -424,20 +424,20 @@ export function Landing() {
       {/* ══ CTA ══════════════════════════════════════════════════════════ */}
       <section style={{ padding: 'clamp(56px,7vw,88px) clamp(24px,6vw,80px)', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-          <img src="/Veltrix.png" alt="Veltrix" style={{ width: 56, height: 56, objectFit: 'contain', margin: '0 auto 20px', display: 'block' }} />
+          <img src="/TenPayroll.png" alt="TenPayroll" style={{ width: 56, height: 56, objectFit: 'contain', margin: '0 auto 20px', display: 'block' }} />
           <h2 style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 900, letterSpacing: '-0.045em', color: '#0D1B2A', lineHeight: 1.05, marginBottom: 16 }}>
             Ready to ditch<br />the spreadsheets?
           </h2>
           <p style={{ fontSize: 16, color: '#6B7280', lineHeight: 1.7, marginBottom: 36, maxWidth: 480, margin: '0 auto 36px' }}>
-            Veltrix is free to explore. All demo data included. Sign in with the pre-filled credentials and see it in action.
+            TenPayroll is free to explore. All demo data included. Sign in with the pre-filled credentials and see it in action.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="land-btn-primary" onClick={() => navigate(user ? '/dashboard' : '/login')} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '14px 30px',
-              borderRadius: 9, background: '#2563EB', color: '#fff',
+              borderRadius: 9, background: '#4F46E5', color: '#fff',
               fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
             }}>
-              {user ? 'Go to Dashboard' : 'Sign in to Veltrix'} <ArrowRight style={{ width: 15, height: 15 }} />
+              {user ? 'Go to Dashboard' : 'Sign in to TenPayroll'} <ArrowRight style={{ width: 15, height: 15 }} />
             </button>
             <button className="land-btn-ghost" onClick={() => navigate('/kiosk')} style={{
               padding: '14px 26px', borderRadius: 9, background: '#fff',
@@ -459,11 +459,11 @@ export function Landing() {
         borderTop: '1px solid #1E3A5F',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img src="/Veltrix.png" alt="Veltrix" style={{ height: 24, width: 24, objectFit: 'contain' }} />
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#E2E8F0', letterSpacing: '-0.02em' }}>Veltrix</span>
+          <img src="/TenPayroll.png" alt="TenPayroll" style={{ height: 24, width: 24, objectFit: 'contain' }} />
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#E2E8F0', letterSpacing: '-0.02em' }}>TenPayroll</span>
           <span style={{ fontSize: 12, color: '#374151' }}>· Philippine HR & Payroll</span>
         </div>
-        <p style={{ fontSize: 11.5, color: '#374151' }}>© {new Date().getFullYear()} Veltrix · Built for Filipino businesses</p>
+        <p style={{ fontSize: 11.5, color: '#374151' }}>© {new Date().getFullYear()} TenPayroll · Built for Filipino businesses</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
           {['PH Compliant', 'SSS 2024', 'PhilHealth 5%', 'BIR TRAIN Law'].map(t => (
             <span key={t} style={{ fontSize: 11.5, color: '#374151', fontWeight: 500 }}>{t}</span>

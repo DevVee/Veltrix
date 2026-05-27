@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Save, Building2, Shield, Bell, Users, Briefcase, Plus, Pencil, Trash2, X, Check } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { Modal } from '../../components/ui/Modal'
+import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
 import {
   getCompanySettings, saveCompanySettings,
   apiGetDepartments, apiCreateDepartment, apiUpdateDepartment, apiDeleteDepartment,
@@ -106,6 +108,7 @@ function DepartmentsTab() {
   const [form, setForm] = useState({ name:'', code:'', description:'', headName:'' })
   const [deleteId, setDeleteId] = useState<string|null>(null)
   const [loading, setLoading] = useState(true)
+  const [deptSearch, setDeptSearch] = useState('')
 
   const load = () => apiGetDepartments().then(d => { setDepartments(d); setLoading(false) })
   useEffect(() => { load() }, [])
@@ -128,9 +131,9 @@ function DepartmentsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">Manage your company's departments. These are used when adding employees.</p>
-        <button onClick={openAdd} className="btn-primary"><Plus className="w-3.5 h-3.5" />Add Department</button>
+      <div className="flex items-center justify-between gap-3">
+        <SearchInput value={deptSearch} onChange={setDeptSearch} placeholder="Search departments…" className="flex-1" />
+        <button onClick={openAdd} className="btn btn-primary"><Plus className="w-3.5 h-3.5" />Add Department</button>
       </div>
 
       <div className="card overflow-hidden">
@@ -141,29 +144,23 @@ function DepartmentsTab() {
         ) : (
           <table className="table-base w-full">
             <thead><tr>
-              <th style={{ paddingLeft:16 }}>Department</th>
+              <th>Department</th>
               <th>Code</th>
               <th className="hidden md:table-cell">Department Head</th>
               <th className="hidden lg:table-cell">Description</th>
-              <th style={{ width:80 }}></th>
+              <th style={{ width:72 }}></th>
             </tr></thead>
             <tbody>
-              {departments.map((d, i) => (
-                <tr key={d.id} className={i % 2 === 1 ? 'row-alt' : ''}>
-                  <td style={{ paddingLeft:16 }}>
-                    <span className="text-sm font-semibold text-gray-800">{d.name}</span>
-                  </td>
+              {departments.filter(d => !deptSearch || d.name.toLowerCase().includes(deptSearch.toLowerCase()) || (d.code ?? '').toLowerCase().includes(deptSearch.toLowerCase())).map(d => (
+                <tr key={d.id}>
+                  <td><span className="text-sm font-semibold text-gray-800">{d.name}</span></td>
                   <td><span className="pill pill-blue">{d.code || '—'}</span></td>
                   <td className="hidden md:table-cell"><span className="text-sm text-gray-600">{d.headName || '—'}</span></td>
                   <td className="hidden lg:table-cell"><span className="text-xs text-gray-400 line-clamp-1">{d.description || '—'}</span></td>
                   <td>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(d)} className="p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors rounded">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => setDeleteId(d.id)} className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors rounded">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="flex items-center gap-1 justify-end">
+                      <ActionIconBtn variant="edit"   icon={Pencil} onClick={() => openEdit(d)}     title="Edit" />
+                      <ActionIconBtn variant="delete" icon={Trash2} onClick={() => setDeleteId(d.id)} title="Delete" />
                     </div>
                   </td>
                 </tr>
@@ -222,6 +219,7 @@ function PositionsTab() {
   const [form, setForm] = useState({ title:'', level:'', description:'' })
   const [deleteId, setDeleteId] = useState<string|null>(null)
   const [loading, setLoading] = useState(true)
+  const [posSearch, setPosSearch] = useState('')
 
   const load = () => apiGetPositions().then(p => { setPositions(p); setLoading(false) })
   useEffect(() => { load() }, [])
@@ -246,9 +244,9 @@ function PositionsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">Manage job positions. Employees can be assigned to these when added or edited.</p>
-        <button onClick={openAdd} className="btn-primary"><Plus className="w-3.5 h-3.5" />Add Position</button>
+      <div className="flex items-center justify-between gap-3">
+        <SearchInput value={posSearch} onChange={setPosSearch} placeholder="Search positions…" className="flex-1" />
+        <button onClick={openAdd} className="btn btn-primary"><Plus className="w-3.5 h-3.5" />Add Position</button>
       </div>
 
       <div className="card overflow-hidden">
@@ -259,31 +257,23 @@ function PositionsTab() {
         ) : (
           <table className="table-base w-full">
             <thead><tr>
-              <th style={{ paddingLeft:16 }}>Position Title</th>
+              <th>Position Title</th>
               <th>Level</th>
               <th className="hidden lg:table-cell">Description</th>
-              <th style={{ width:80 }}></th>
+              <th style={{ width:72 }}></th>
             </tr></thead>
             <tbody>
-              {positions.map((p, i) => (
-                <tr key={p.id} className={i % 2 === 1 ? 'row-alt' : ''}>
-                  <td style={{ paddingLeft:16 }}>
-                    <span className="text-sm font-semibold text-gray-800">{p.title}</span>
-                  </td>
+              {positions.filter(p => !posSearch || p.title.toLowerCase().includes(posSearch.toLowerCase()) || (p.level ?? '').toLowerCase().includes(posSearch.toLowerCase())).map(p => (
+                <tr key={p.id}>
+                  <td><span className="text-sm font-semibold text-gray-800">{p.title}</span></td>
                   <td>
-                    {p.level
-                      ? <span className="pill pill-indigo">{p.level}</span>
-                      : <span className="text-gray-300">—</span>}
+                    {p.level ? <span className="pill pill-indigo">{p.level}</span> : <span className="text-gray-300">—</span>}
                   </td>
                   <td className="hidden lg:table-cell"><span className="text-xs text-gray-400 line-clamp-1">{p.description || '—'}</span></td>
                   <td>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(p)} className="p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors rounded">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => setDeleteId(p.id)} className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors rounded">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="flex items-center gap-1 justify-end">
+                      <ActionIconBtn variant="edit"   icon={Pencil} onClick={() => openEdit(p)}     title="Edit" />
+                      <ActionIconBtn variant="delete" icon={Trash2} onClick={() => setDeleteId(p.id)} title="Delete" />
                     </div>
                   </td>
                 </tr>
@@ -443,8 +433,8 @@ function DeductionsTab() {
               hint="Applied as % of hourly rate. Standard: 10% (0.10)"
             />
           )}
-          <div className="p-3 text-xs rounded" style={{ background:'#F0FDF4', border:'1px solid #BBF7D0', color:'#166534' }}>
-            Government deductions (SSS, PhilHealth, Pag-IBIG, Withholding Tax) always follow official PH regulations and are not configurable.
+          <div className="p-3 text-xs rounded" style={{ background:'#FFF7ED', border:'1px solid #FED7AA', color:'#9A3412' }}>
+            Note: Government deductions (SSS, PhilHealth, Pag-IBIG) are monthly amounts divided by pay frequency (÷4 for weekly, ÷2 for semi-monthly). OT multipliers are configured in Deduction Rules.
           </div>
         </div>
       </div>
@@ -574,7 +564,7 @@ function Toggle({ label, checked, onChange }: { label:string; checked:boolean; o
     <label className="flex items-center gap-3 cursor-pointer select-none">
       <div
         className="toggle-track"
-        style={{ background: checked ? '#1a56db' : '#d1d5db' }}
+        style={{ background: checked ? '#4F46E5' : '#CBD5E1' }}
         onClick={() => onChange(!checked)}
       >
         <div

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Plus, Clock, Edit2, Trash2, Search } from 'lucide-react'
+import { Plus, Clock, Edit2, Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
@@ -89,15 +90,12 @@ export function ShiftList() {
       {/* Search */}
       {(shifts?.length ?? 0) > 0 && (
         <div className="card px-3 py-2.5">
-          <div className="relative" style={{ maxWidth: 320 }}>
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search shifts…"
-              className="input-base pl-8"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search shifts…"
+            className="w-full"
+          />
         </div>
       )}
 
@@ -128,19 +126,19 @@ export function ShiftList() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2" style={{ background:'#F9FAFB', border:'1px solid #E5E7EB' }}>
+                <div className="p-2" style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius: 6 }}>
                   <p className="text-gray-400 mb-0.5">Time In</p>
                   <p className="font-bold text-gray-800">{formatTime12(s.timeIn)}</p>
                 </div>
-                <div className="p-2" style={{ background:'#F9FAFB', border:'1px solid #E5E7EB' }}>
+                <div className="p-2" style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius: 6 }}>
                   <p className="text-gray-400 mb-0.5">Time Out</p>
                   <p className="font-bold text-gray-800">{formatTime12(s.timeOut)}</p>
                 </div>
-                <div className="p-2" style={{ background:'#F9FAFB', border:'1px solid #E5E7EB' }}>
+                <div className="p-2" style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius: 6 }}>
                   <p className="text-gray-400 mb-0.5">Break</p>
                   <p className="font-bold text-gray-800">{s.breakMinutes} min</p>
                 </div>
-                <div className="p-2" style={{ background:'#F9FAFB', border:'1px solid #E5E7EB' }}>
+                <div className="p-2" style={{ background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius: 6 }}>
                   <p className="text-gray-400 mb-0.5">Grace Period</p>
                   <p className="font-bold text-gray-800">{s.graceMinutes} min</p>
                 </div>
@@ -152,9 +150,9 @@ export function ShiftList() {
                   {DAY_ABBR.map((d,i) => (
                     <span key={d} className="inline-flex items-center justify-center w-7 h-7 text-[10px] font-bold"
                       style={{
-                        background: s.restDays.includes(i) ? '#EFF6FF' : '#F9FAFB',
-                        color: s.restDays.includes(i) ? '#1565C0' : '#9CA3AF',
-                        border: `1px solid ${s.restDays.includes(i) ? '#BFDBFE' : '#E5E7EB'}`,
+                        background: s.restDays.includes(i) ? '#EEF2FF' : '#F8FAFC',
+                        color: s.restDays.includes(i) ? '#4F46E5' : '#94A3B8',
+                        border: `1px solid ${s.restDays.includes(i) ? '#C7D2FE' : '#E2E8F0'}`,
                       }}>
                       {d}
                     </span>
@@ -223,9 +221,10 @@ export function ShiftList() {
                 <button key={d} type="button" onClick={() => toggleRestDay(i)}
                   className="flex items-center justify-center w-10 h-10 text-xs font-bold transition-colors"
                   style={{
-                    background: form.restDays.includes(i) ? '#1565C0' : '#F9FAFB',
-                    color: form.restDays.includes(i) ? '#FFFFFF' : '#6B7280',
-                    border: `1px solid ${form.restDays.includes(i) ? '#1565C0' : '#D1D5DB'}`,
+                    background: form.restDays.includes(i) ? '#4F46E5' : '#F8FAFC',
+                    color: form.restDays.includes(i) ? '#FFFFFF' : '#64748B',
+                    border: `1px solid ${form.restDays.includes(i) ? '#4F46E5' : '#E2E8F0'}`,
+                    borderRadius: 8,
                   }}>
                   {d}
                 </button>
@@ -233,7 +232,7 @@ export function ShiftList() {
             </div>
           </div>
           {form.name && (
-            <div className="p-3 text-xs text-blue-700" style={{ background:'#EFF6FF', border:'1px solid #BFDBFE' }}>
+            <div className="p-3 text-xs" style={{ background:'#EEF2FF', border:'1px solid #C7D2FE', borderRadius: 8, color: '#4338CA' }}>
               Total work: {calcHours(form.timeIn, form.timeOut, form.breakMinutes)} hrs/day ·
               Work days: {7 - form.restDays.length}/week
             </div>

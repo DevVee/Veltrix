@@ -1,20 +1,15 @@
 import { useState } from 'react'
-import { Calendar, CheckCircle, XCircle, Search, Users } from 'lucide-react'
+import { Calendar, CheckCircle, XCircle, Users } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useData } from '../../hooks/useData'
 import { apiGetLeaves, apiUpdateLeaveStatus, apiGetLeaveBalances } from '../../lib/db'
 import { useAuthStore } from '../../store/authStore'
 import type { LeaveRequest } from '../../types'
-
-const STATUS_PILL: Record<string, string> = {
-  pending:   'pill pill-yellow',
-  approved:  'pill pill-green',
-  rejected:  'pill pill-red',
-  cancelled: 'pill pill-gray',
-}
 
 const LEAVE_TYPE_LABEL: Record<string, string> = {
   vacation:    'Vacation',
@@ -101,7 +96,7 @@ export function LeaveList() {
             <span
               className="flex items-center justify-center text-white font-bold"
               style={{
-                background: '#b45309', borderRadius: 999,
+                background: '#4F46E5', borderRadius: 9999,
                 width: 16, height: 16, fontSize: 9, marginLeft: 2,
               }}
             >
@@ -121,32 +116,31 @@ export function LeaveList() {
         <>
           {/* Filters */}
           <div className="card">
-            <div className="flex flex-wrap gap-2 px-3 py-2.5">
-              <div className="relative flex-1 min-w-40">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                <input
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search employee…"
-                  className="input-base pl-8"
-                />
+            <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search employee…"
+                className="flex-1"
+              />
+              {/* Status filter pills */}
+              <div className="flex items-center gap-1">
+                {(['all','pending','approved','rejected','cancelled'] as const).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className="filter-pill"
+                    style={statusFilter === s ? { background: '#EEF2FF', color: '#4F46E5', borderColor: '#C7D2FE', fontWeight: 600 } : {}}
+                  >
+                    {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
               </div>
-              <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                className="input-base"
-                style={{ width: '130px' }}
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
               <select
                 value={typeFilter}
                 onChange={e => setTypeFilter(e.target.value)}
-                className="input-base"
-                style={{ width: '130px' }}
+                className="input-base input-sm"
+                style={{ width: 130 }}
               >
                 <option value="all">All Types</option>
                 {Object.entries(LEAVE_TYPE_LABEL).map(([v,l]) => (
@@ -209,9 +203,9 @@ export function LeaveList() {
                             <span className="text-sm text-gray-500 line-clamp-1">{r.reason}</span>
                           </td>
                           <td>
-                            <span className={STATUS_PILL[r.status] ?? 'pill pill-gray'}>
-                              {r.status}
-                            </span>
+                            <StatusBadge type="leave" status={r.status}>
+                              {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                            </StatusBadge>
                           </td>
                           <td className="hidden md:table-cell">
                             <span className="text-[11px] text-gray-400 tabular-nums">
@@ -318,7 +312,7 @@ export function LeaveList() {
           <div className="space-y-4">
             <div
               className="p-3"
-              style={{ background: '#F7F8FA', border: '1px solid #EEF0F4', borderRadius: '4px' }}
+              style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8 }}
             >
               <p className="text-sm font-semibold text-gray-800">{acting.employeeName}</p>
               <p className="text-[11px] text-gray-500 mt-0.5">
@@ -371,7 +365,7 @@ function BalanceCell({ used, total }: { used: number; total: number }) {
           className="h-full transition-all"
           style={{
             width: `${Math.min(pct, 100)}%`,
-            background: isLow ? '#F59E0B' : '#1565C0',
+            background: isLow ? '#D97706' : '#4F46E5',
             borderRadius: '999px',
           }}
         />

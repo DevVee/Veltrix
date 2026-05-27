@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Search, Shield, CalendarDays } from 'lucide-react'
+import { Shield, CalendarDays } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { useData } from '../../hooks/useData'
 import { apiGetAuditLogs } from '../../lib/db'
 
@@ -81,15 +82,12 @@ export function AuditLog() {
       {/* Filters */}
       <div className="card">
         <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
-          <div className="relative flex-1 min-w-40">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search user, action, description…"
-              className="input-base pl-8"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search user, action, description…"
+            className="flex-1"
+          />
           <select
             value={moduleFilter}
             onChange={e => setModuleFilter(e.target.value)}

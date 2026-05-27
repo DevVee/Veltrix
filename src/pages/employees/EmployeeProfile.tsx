@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Edit2, ArrowLeft, Mail, Phone, Calendar, CreditCard, Clock } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useData } from '../../hooks/useData'
 import { apiGetEmployee, apiGetAttendance, apiGetLeaves, apiGetPayrollPeriods, apiGetPayrollEntries } from '../../lib/db'
 import { formatPeso } from '../../lib/payrollEngine'
@@ -10,10 +11,15 @@ import type { PayrollEntry } from '../../types'
 const TABS = ['Overview', 'Attendance', 'Payroll History', 'Leaves'] as const
 type Tab = typeof TABS[number]
 
-const STATUS_STYLE: Record<string, string> = {
-  present:'bg-green-50 text-green-700', late:'bg-yellow-50 text-yellow-700',
-  absent:'bg-red-50 text-red-700', 'on-leave':'bg-blue-50 text-blue-700',
-  'half-day':'bg-orange-50 text-orange-700', 'rest-day':'bg-gray-100 text-gray-500',
+// Deterministic avatar color
+const AVATAR_PALETTE = [
+  '#4F46E5','#7C3AED','#059669','#D97706',
+  '#DC2626','#0284C7','#BE185D','#065F46',
+]
+function avatarColor(id: string) {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = id.charCodeAt(i) + ((h << 5) - h)
+  return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length]
 }
 
 export function EmployeeProfile() {
@@ -54,6 +60,7 @@ export function EmployeeProfile() {
   const presentDays = att.filter(a => a.status === 'present' || a.status === 'late').length
   const lateDays    = att.filter(a => a.status === 'late').length
   const absentDays  = att.filter(a => a.status === 'absent').length
+  const bgColor     = avatarColor(emp.id)
 
   return (
     <div className="space-y-4">
@@ -67,56 +74,85 @@ export function EmployeeProfile() {
         ]}
       />
 
-      {/* Profile header card */}
-      <div className="card p-5">
-        <div className="flex items-start gap-5">
-          <div
-            className="avatar avatar-xl flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #1a56db, #1245b8)' }}
-          >
-            {emp.firstName[0]}{emp.lastName[0]}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h2 className="text-lg font-black text-gray-900">{emp.fullName}</h2>
-              <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-semibold capitalize
-                ${emp.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                {emp.status}
-              </span>
+      {/* ── Profile hero card ── */}
+      <div className="card overflow-hidden">
+        {/* Gradient bar */}
+        <div style={{ height: 5, background: 'linear-gradient(90deg, #4F46E5, #818CF8)' }} />
+
+        <div className="p-5">
+          <div className="flex items-start gap-5">
+            {/* Avatar with ring */}
+            <div
+              className="flex-shrink-0 flex items-center justify-center text-white font-bold select-none"
+              style={{
+                width: 64, height: 64,
+                borderRadius: '50%',
+                background: bgColor,
+                fontSize: 22,
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                boxShadow: `0 0 0 3px white, 0 0 0 5px ${bgColor}33`,
+              }}
+            >
+              {emp.firstName[0]}{emp.lastName[0]}
             </div>
-            <p className="text-sm text-gray-500">{emp.position} · {emp.department}</p>
-            <div className="flex flex-wrap gap-4 mt-3">
-              <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                <Mail className="w-3.5 h-3.5" />{emp.email}
-              </span>
-              <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                <Phone className="w-3.5 h-3.5" />{emp.phone}
-              </span>
-              <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                <Calendar className="w-3.5 h-3.5" />Hired {new Date(emp.hireDate).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})}
-              </span>
-              <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                <CreditCard className="w-3.5 h-3.5" />₱{emp.basicSalary.toLocaleString()} / mo
-              </span>
-            </div>
-          </div>
-          {/* Quick stats */}
-          <div className="hidden lg:flex gap-4">
-            {[
-              { label:'Present (30d)', value: presentDays, color:'text-green-600' },
-              { label:'Late (30d)',    value: lateDays,    color:'text-yellow-600' },
-              { label:'Absent (30d)', value: absentDays,  color:'text-red-600' },
-            ].map(s => (
-              <div key={s.label} className="text-center px-4 py-2" style={{ borderLeft:'1px solid #F3F4F6' }}>
-                <p className={`text-2xl font-black ${s.color} tabular-nums`}>{s.value}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{s.label}</p>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.025em' }}>
+                  {emp.fullName}
+                </h2>
+                <StatusBadge type="employee" status={emp.status}>
+                  {emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
+                </StatusBadge>
               </div>
-            ))}
+              <p style={{ fontSize: 13, color: '#64748B' }}>
+                {emp.position}
+                <span style={{ color: '#CBD5E1', margin: '0 6px' }}>·</span>
+                {emp.department}
+              </p>
+              <div className="flex flex-wrap gap-4 mt-3">
+                {[
+                  { icon: Mail,       text: emp.email },
+                  { icon: Phone,      text: emp.phone },
+                  { icon: Calendar,   text: `Hired ${new Date(emp.hireDate).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})}` },
+                  { icon: CreditCard, text: `₱${emp.basicSalary.toLocaleString()} / mo` },
+                ].map(({ icon: Icon, text }) => (
+                  <span key={text} className="flex items-center gap-1.5" style={{ fontSize: 12, color: '#94A3B8' }}>
+                    <Icon style={{ width: 13, height: 13 }} />
+                    {text}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick stats strip */}
+            <div className="hidden lg:flex items-stretch gap-0" style={{ borderLeft: '1px solid #F1F5F9', paddingLeft: 16 }}>
+              {[
+                { label: 'Present (30d)', value: presentDays, color: '#059669' },
+                { label: 'Late (30d)',    value: lateDays,    color: '#D97706' },
+                { label: 'Absent (30d)', value: absentDays,  color: '#DC2626' },
+              ].map((s, i) => (
+                <div
+                  key={s.label}
+                  className="text-center px-5"
+                  style={{ borderLeft: i > 0 ? '1px solid #F1F5F9' : 'none' }}
+                >
+                  <p style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-0.04em' }}>
+                    {s.value}
+                  </p>
+                  <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 4, whiteSpace: 'nowrap' }}>
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* ── Tab bar ── */}
       <div className="tab-bar">
         {TABS.map(t => (
           <button
@@ -129,7 +165,7 @@ export function EmployeeProfile() {
         ))}
       </div>
 
-      {/* Overview */}
+      {/* ── Overview ── */}
       {tab === 'Overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <InfoSection title="Personal Information">
@@ -158,30 +194,37 @@ export function EmployeeProfile() {
           </InfoSection>
           <InfoSection title="Government IDs">
             {[
-              ['SSS No.',       emp.sssNo],
-              ['PhilHealth No.',emp.philhealthNo],
-              ['Pag-IBIG No.',  emp.pagibigNo],
-              ['TIN No.',       emp.tinNo],
+              ['SSS No.',        emp.sssNo],
+              ['PhilHealth No.', emp.philhealthNo],
+              ['Pag-IBIG No.',   emp.pagibigNo],
+              ['TIN No.',        emp.tinNo],
             ]}
           </InfoSection>
           <InfoSection title="Banking & Emergency Contact">
             {[
-              ['Bank Name',      emp.bankName],
-              ['Bank Account',   emp.bankAccount],
-              ['Emergency Name', emp.emergencyContactName],
-              ['Emergency Phone',emp.emergencyContactPhone],
+              ['Bank Name',       emp.bankName],
+              ['Bank Account',    emp.bankAccount],
+              ['Emergency Name',  emp.emergencyContactName],
+              ['Emergency Phone', emp.emergencyContactPhone],
             ]}
           </InfoSection>
           {emp.allowances.length > 0 && (
             <div className="card p-4 lg:col-span-2">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Allowances</h3>
+              <h3 style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                Allowances
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {emp.allowances.map((a, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-1.5"
-                    style={{ background:'#F9FAFB', border:'1px solid #E5E7EB' }}>
-                    <span className="text-sm text-gray-700">{a.type}</span>
-                    <span className="text-sm font-bold text-gray-900">{formatPeso(a.amount)}</span>
-                    {!a.taxable && <span className="text-[10px] text-green-600 font-semibold">NON-TAX</span>}
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 px-3 py-1.5"
+                    style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8 }}
+                  >
+                    <span style={{ fontSize: 13, color: '#475569' }}>{a.type}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{formatPeso(a.amount)}</span>
+                    {!a.taxable && (
+                      <span style={{ fontSize: 10, color: '#059669', fontWeight: 600 }}>NON-TAX</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -190,136 +233,159 @@ export function EmployeeProfile() {
         </div>
       )}
 
-      {/* Attendance */}
+      {/* ── Attendance ── */}
       {tab === 'Attendance' && (
         <div className="card overflow-hidden">
-          <div className="px-5 py-3.5" style={{ borderBottom:'1px solid #F3F4F6' }}>
-            <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-brand" />Last 30 Days Attendance
-            </h3>
+          <div className="flex items-center gap-2 px-5 py-3.5" style={{ borderBottom: '1px solid #F1F5F9' }}>
+            <Clock style={{ width: 15, height: 15, color: '#4F46E5' }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Last 30 Days Attendance</span>
           </div>
           {att.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-400">No attendance records found</div>
+            <div className="py-12 text-center" style={{ fontSize: 13, color: '#94A3B8' }}>
+              No attendance records found
+            </div>
           ) : (
-            <table className="table-base w-full">
-              <thead>
-                <tr>
-                  {['Date','Time In','Time Out','Hours','Late','Status'].map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {att.filter(a => a.status !== 'rest-day').map(a => {
-                  const hours = a.timeIn && a.timeOut
-                    ? ((new Date(a.timeOut).getTime() - new Date(a.timeIn).getTime()) / 3600000).toFixed(1)
-                    : '—'
-                  return (
-                    <tr key={a.id}>
-                      <td className="px-5 py-2.5 text-sm text-gray-700 font-medium tabular-nums">{a.date}</td>
-                      <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">
-                        {a.timeIn ? new Date(a.timeIn).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—'}
-                      </td>
-                      <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">
-                        {a.timeOut ? new Date(a.timeOut).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—'}
-                      </td>
-                      <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">{hours}</td>
-                      <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">
-                        {a.minutesLate > 0 ? `${a.minutesLate}m` : '—'}
-                      </td>
-                      <td className="px-5 py-2.5">
-                        <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-semibold capitalize ${STATUS_STYLE[a.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {a.status.replace('-',' ')}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="table-base w-full">
+                <thead>
+                  <tr>
+                    {['Date','Time In','Time Out','Hours','Late','Status'].map(h => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {att.filter(a => a.status !== 'rest-day').map(a => {
+                    const hours = a.timeIn && a.timeOut
+                      ? ((new Date(a.timeOut).getTime() - new Date(a.timeIn).getTime()) / 3600000).toFixed(1)
+                      : '—'
+                    return (
+                      <tr key={a.id}>
+                        <td className="tabular-nums" style={{ fontWeight: 500 }}>{a.date}</td>
+                        <td className="tabular-nums text-gray-600">
+                          {a.timeIn ? new Date(a.timeIn).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—'}
+                        </td>
+                        <td className="tabular-nums text-gray-600">
+                          {a.timeOut ? new Date(a.timeOut).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—'}
+                        </td>
+                        <td className="tabular-nums text-gray-600">{hours}</td>
+                        <td className="tabular-nums text-gray-600">
+                          {a.minutesLate > 0 ? `${a.minutesLate}m` : '—'}
+                        </td>
+                        <td>
+                          <StatusBadge type="attendance" status={a.status}>
+                            {a.status.replace('-', ' ')}
+                          </StatusBadge>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
-      {/* Payroll History */}
+      {/* ── Payroll History ── */}
       {tab === 'Payroll History' && (
         <div className="card overflow-hidden">
-          <div className="px-5 py-3.5" style={{ borderBottom:'1px solid #F3F4F6' }}>
-            <h3 className="text-sm font-bold text-gray-800">Payroll History</h3>
+          <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #F1F5F9' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Payroll History</span>
           </div>
           {payrollEntries.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-400">
+            <div className="py-12 text-center" style={{ fontSize: 13, color: '#94A3B8' }}>
               {entriesLoaded ? 'No payroll records found' : 'Loading…'}
             </div>
           ) : (
-            <table className="table-base w-full">
-              <thead>
-                <tr>
-                  {['Period','Gross Pay','Deductions','Net Pay',''].map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {payrollEntries.map(pe => {
-                  const period = periods?.find(p => p.id === pe.payrollPeriodId)
-                  return (
-                    <tr key={pe.id}>
-                      <td className="px-5 py-2.5">
-                        <p className="text-sm font-semibold text-gray-800">{period?.periodNo ?? '—'}</p>
-                        <p className="text-xs text-gray-400">{period?.startDate} – {period?.endDate}</p>
-                      </td>
-                      <td className="px-5 py-2.5 text-sm font-semibold text-gray-800 tabular-nums">{formatPeso(pe.grossPay)}</td>
-                      <td className="px-5 py-2.5 text-sm font-semibold text-red-600 tabular-nums">−{formatPeso(pe.totalDeductions)}</td>
-                      <td className="px-5 py-2.5 text-sm font-black text-brand tabular-nums">{formatPeso(pe.netPay)}</td>
-                      <td className="px-5 py-2.5">
-                        <button onClick={() => navigate(`/payroll/${pe.payrollPeriodId}/payslip/${pe.employeeId}`)}
-                          className="text-xs text-brand font-semibold hover:underline">Payslip →</button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="table-base w-full">
+                <thead>
+                  <tr>
+                    {['Period','Gross Pay','Deductions','Net Pay',''].map(h => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {payrollEntries.map(pe => {
+                    const period = periods?.find(p => p.id === pe.payrollPeriodId)
+                    return (
+                      <tr key={pe.id}>
+                        <td>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>
+                            {period?.periodNo ?? '—'}
+                          </p>
+                          <p style={{ fontSize: 11, color: '#94A3B8' }}>
+                            {period?.startDate} – {period?.endDate}
+                          </p>
+                        </td>
+                        <td className="tabular-nums" style={{ fontWeight: 600, color: '#0F172A' }}>
+                          {formatPeso(pe.grossPay)}
+                        </td>
+                        <td className="tabular-nums" style={{ fontWeight: 600, color: '#DC2626' }}>
+                          −{formatPeso(pe.totalDeductions)}
+                        </td>
+                        <td className="tabular-nums" style={{ fontWeight: 800, color: '#4F46E5' }}>
+                          {formatPeso(pe.netPay)}
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => navigate(`/payroll/${pe.payrollPeriodId}/payslip/${pe.employeeId}`)}
+                            style={{ fontSize: 12, color: '#4F46E5', fontWeight: 600 }}
+                            className="hover:underline"
+                          >
+                            Payslip →
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
-      {/* Leaves */}
+      {/* ── Leaves ── */}
       {tab === 'Leaves' && (
         <div className="card overflow-hidden">
-          <div className="px-5 py-3.5" style={{ borderBottom:'1px solid #F3F4F6' }}>
-            <h3 className="text-sm font-bold text-gray-800">Leave Requests</h3>
+          <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #F1F5F9' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Leave Requests</span>
           </div>
           {lv.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-400">No leave records found</div>
+            <div className="py-12 text-center" style={{ fontSize: 13, color: '#94A3B8' }}>
+              No leave records found
+            </div>
           ) : (
-            <table className="table-base w-full">
-              <thead>
-                <tr>
-                  {['Type','Start','End','Days','Reason','Status'].map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {lv.map(l => (
-                  <tr key={l.id}>
-                    <td className="px-5 py-2.5 text-sm capitalize font-medium text-gray-700">{l.leaveType}</td>
-                    <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">{l.startDate}</td>
-                    <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">{l.endDate}</td>
-                    <td className="px-5 py-2.5 text-sm text-gray-600 tabular-nums">{l.days}</td>
-                    <td className="px-5 py-2.5 text-sm text-gray-600 max-w-xs truncate">{l.reason}</td>
-                    <td className="px-5 py-2.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-semibold capitalize
-                        ${l.status==='approved'?'bg-green-50 text-green-700':l.status==='pending'?'bg-yellow-50 text-yellow-700':'bg-red-50 text-red-700'}`}>
-                        {l.status}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="table-base w-full">
+                <thead>
+                  <tr>
+                    {['Type','Start','End','Days','Reason','Status'].map(h => (
+                      <th key={h}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {lv.map(l => (
+                    <tr key={l.id}>
+                      <td style={{ fontWeight: 500, textTransform: 'capitalize' }}>{l.leaveType}</td>
+                      <td className="tabular-nums text-gray-600">{l.startDate}</td>
+                      <td className="tabular-nums text-gray-600">{l.endDate}</td>
+                      <td className="tabular-nums text-gray-600">{l.days}</td>
+                      <td className="max-w-xs truncate text-gray-600">{l.reason}</td>
+                      <td>
+                        <StatusBadge type="leave" status={l.status}>
+                          {l.status.charAt(0).toUpperCase() + l.status.slice(1)}
+                        </StatusBadge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
@@ -330,12 +396,16 @@ export function EmployeeProfile() {
 function InfoSection({ title, children }: { title: string; children: [string, string][] }) {
   return (
     <div className="card p-4">
-      <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{title}</h3>
-      <div className="space-y-2">
+      <h3 style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+        {title}
+      </h3>
+      <div className="space-y-2.5">
         {children.map(([label, value]) => (
           <div key={label} className="flex items-start gap-3">
-            <span className="text-xs text-gray-400 w-32 flex-shrink-0 mt-0.5">{label}</span>
-            <span className="text-sm text-gray-800 font-medium flex-1 min-w-0 break-words">{value || '—'}</span>
+            <span style={{ fontSize: 12, color: '#94A3B8', width: 128, flexShrink: 0, paddingTop: 1 }}>{label}</span>
+            <span style={{ fontSize: 13, color: '#0F172A', fontWeight: 500, flex: 1, minWidth: 0, wordBreak: 'break-word' }}>
+              {value || '—'}
+            </span>
           </div>
         ))}
       </div>

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Search, Plus, Users, Edit2, Trash2, Eye,
+  Plus, Users, Edit2, Trash2, Eye,
   SlidersHorizontal, Filter,
 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { useData } from '../../hooks/useData'
 import { apiGetEmployees, apiDeleteEmployee, apiGetDepartments } from '../../lib/db'
 import type { Employee, Department } from '../../types'
@@ -92,19 +94,12 @@ export function EmployeeList() {
       <div className="card">
         <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
           {/* Search */}
-          <div className="relative flex-1" style={{ minWidth: 200, maxWidth: 320 }}>
-            <Search
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
-              style={{ width: 13, height: 13 }}
-            />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search name, ID, position…"
-              className="input-base"
-              style={{ paddingLeft: 30 }}
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search name, ID, position…"
+            className="flex-1"
+          />
 
           {/* Filter toggle */}
           <button
@@ -317,28 +312,10 @@ export function EmployeeList() {
                         </td>
 
                         <td onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center gap-0.5 justify-end">
-                            <button
-                              onClick={() => navigate(`/employees/${emp.id}`)}
-                              className="p-1.5 rounded text-gray-300 hover:text-brand hover:bg-blue-50 transition-colors"
-                              title="View profile"
-                            >
-                              <Eye style={{ width: 13, height: 13 }} />
-                            </button>
-                            <button
-                              onClick={() => navigate(`/employees/${emp.id}/edit`)}
-                              className="p-1.5 rounded text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit2 style={{ width: 13, height: 13 }} />
-                            </button>
-                            <button
-                              onClick={e => handleDelete(emp, e)}
-                              className="p-1.5 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 style={{ width: 13, height: 13 }} />
-                            </button>
+                          <div className="flex items-center gap-1 justify-end">
+                            <ActionIconBtn variant="view"   icon={Eye}    onClick={() => navigate(`/employees/${emp.id}`)}       title="View profile" />
+                            <ActionIconBtn variant="edit"   icon={Edit2}  onClick={() => navigate(`/employees/${emp.id}/edit`)} title="Edit" />
+                            <ActionIconBtn variant="delete" icon={Trash2} onClick={e => handleDelete(emp, e)}                   title="Delete" />
                           </div>
                         </td>
                       </tr>

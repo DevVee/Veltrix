@@ -15,17 +15,17 @@ const REPORT_TABS = [
   { id:'govcontrib', label:'Gov\'t Contributions', icon: FileText,  desc: 'SSS, PhilHealth, Pag-IBIG breakdown' },
 ]
 
-const PIE_COLORS  = ['#1a56db','#15803d','#b45309','#dc2626','#7c3aed','#0d9488']
+const PIE_COLORS  = ['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0284C7']
 const CHART_STYLE = {
   contentStyle: {
     fontSize: 11,
-    border: '1px solid #e4e7ec',
-    borderRadius: '4px',
-    boxShadow: 'none',
-    padding: '4px 8px',
-    color: '#374151',
+    border: '1px solid #E2E8F0',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    padding: '6px 10px',
+    color: '#0F172A',
   },
-  cursor: { fill: '#f0f4ff' },
+  cursor: { fill: '#EEF2FF' },
 }
 
 function dateN(offset: number) {
@@ -224,7 +224,7 @@ export function Reports() {
                                 className="h-full"
                                 style={{
                                   width: `${att.length > 0 ? (s.value / att.length) * 100 : 0}%`,
-                                  background: '#1565C0',
+                                  background: '#4F46E5',
                                   borderRadius: '999px',
                                   transition: 'width 0.4s ease',
                                 }}
@@ -284,7 +284,7 @@ export function Reports() {
                         />
                         <Tooltip {...CHART_STYLE} formatter={(v: number) => formatPeso(v)} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey="gross"      fill="#1a56db" name="Gross Pay"   radius={[2,2,0,0]} />
+                        <Bar dataKey="gross"      fill="#4F46E5" name="Gross Pay"   radius={[2,2,0,0]} />
                         <Bar dataKey="net"        fill="#22c55e" name="Net Pay"     radius={[2,2,0,0]} />
                         <Bar dataKey="deductions" fill="#ef4444" name="Deductions"  radius={[2,2,0,0]} />
                       </BarChart>
@@ -372,7 +372,7 @@ export function Reports() {
                         />
                         <Tooltip {...CHART_STYLE} formatter={(v: number) => formatPeso(v)} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey="ee" fill="#1a56db" name="Employee Share" radius={[2,2,0,0]} />
+                        <Bar dataKey="ee" fill="#4F46E5" name="Employee Share" radius={[2,2,0,0]} />
                         <Bar dataKey="er" fill="#22c55e" name="Employer Share" radius={[2,2,0,0]} />
                       </BarChart>
                     </ResponsiveContainer>

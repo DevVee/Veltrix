@@ -126,14 +126,14 @@ export function Kiosk() {
         <div className="flex items-center gap-3">
           <div
             className="w-9 h-9 flex items-center justify-center font-black text-white text-base"
-            style={{ background: 'linear-gradient(135deg,#2563EB 0%,#7C3AED 100%)', borderRadius: '8px' }}
+            style={{ background: 'linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%)', borderRadius: '8px' }}
           >
-            V
+            T
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-none">{company.name}</p>
-            <p className="text-[10px] mt-0.5 font-medium uppercase tracking-widest" style={{ color: '#3D4452' }}>
-              Attendance Kiosk
+            <p className="text-white font-bold text-sm leading-none">TenPayroll</p>
+            <p className="text-[10px] mt-0.5 font-medium uppercase tracking-widest" style={{ color: '#4B5563' }}>
+              {company.name || 'Ten Foundation Philippines Inc.'}
             </p>
           </div>
         </div>

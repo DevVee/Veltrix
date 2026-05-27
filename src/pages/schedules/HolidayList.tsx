@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Plus, Star, Trash2, Search } from 'lucide-react'
+import { Plus, Star, Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
@@ -8,10 +9,10 @@ import { useData } from '../../hooks/useData'
 import { apiGetHolidays } from '../../lib/db'
 import type { Holiday, HolidayType } from '../../types'
 
-const TYPE_CFG: Record<string, { label: string; bg: string; color: string }> = {
-  regular:              { label:'Regular',            bg:'#FEF3C7', color:'#92400E' },
-  'special-non-working':{ label:'Special Non-Working',bg:'#EFF6FF', color:'#1E40AF' },
-  'special-working':    { label:'Special Working',    bg:'#F0FDF4', color:'#166534' },
+const TYPE_CFG: Record<string, { label: string; bg: string; color: string; border: string }> = {
+  regular:              { label:'Regular',            bg:'#FFFBEB', color:'#D97706', border:'#FDE68A' },
+  'special-non-working':{ label:'Special Non-Working',bg:'#EEF2FF', color:'#4F46E5', border:'#C7D2FE' },
+  'special-working':    { label:'Special Working',    bg:'#ECFDF5', color:'#059669', border:'#A7F3D0' },
 }
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -80,8 +81,8 @@ export function HolidayList() {
       <div className="flex gap-3 flex-wrap">
         {Object.entries(TYPE_CFG).map(([k,v]) => (
           <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1"
-            style={{ background: v.bg, color: v.color, border:`1px solid ${v.color}20` }}>
-            <span className="w-2 h-2 inline-block" style={{ background: v.color }} />
+            style={{ background: v.bg, color: v.color, border:`1px solid ${v.border}`, borderRadius: 9999 }}>
+            <span className="w-1.5 h-1.5 inline-block rounded-full" style={{ background: v.color }} />
             {v.label}
           </span>
         ))}
@@ -95,23 +96,21 @@ export function HolidayList() {
             <button key={y} onClick={() => setYearFilter(y)}
               className="px-3 py-1 text-xs font-bold transition-colors"
               style={{
-                background: yearFilter === y ? '#1565C0' : '#F3F4F6',
-                color: yearFilter === y ? '#FFFFFF' : '#6B7280',
-                border:'1px solid transparent',
+                background: yearFilter === y ? '#4F46E5' : '#F8FAFC',
+                color: yearFilter === y ? '#FFFFFF' : '#64748B',
+                border: `1px solid ${yearFilter === y ? '#4F46E5' : '#E2E8F0'}`,
+                borderRadius: 8,
               }}>
               {y}
             </button>
           ))}
         </div>
-        <div className="relative ml-2" style={{ minWidth: 200 }}>
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search holiday name…"
-            className="input-base pl-8"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search holiday name…"
+          className="ml-2"
+        />
         <span className="text-xs text-gray-400 ml-auto">{filtered.length} holidays</span>
       </div>
 
@@ -131,7 +130,7 @@ export function HolidayList() {
             .map(([m, hs]) => (
               <div key={m} className="card overflow-hidden">
                 <div className="px-4 py-2.5 flex items-center justify-between"
-                  style={{ background:'#F9FAFB', borderBottom:'1px solid #F3F4F6' }}>
+                  style={{ background:'#F8FAFC', borderBottom:'1px solid #F1F5F9' }}>
                   <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wide">{MONTHS[Number(m)]}</h3>
                   <span className="text-[10px] text-gray-400">{hs.length} holiday{hs.length > 1 ? 's' : ''}</span>
                 </div>
@@ -150,7 +149,7 @@ export function HolidayList() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-800 truncate">{h.name}</p>
                           <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold mt-0.5"
-                            style={{ background: cfg.bg, color: cfg.color }}>
+                            style={{ background: cfg.bg, color: cfg.color, border:`1px solid ${cfg.border}`, borderRadius: 9999 }}>
                             {cfg.label}
                           </span>
                         </div>

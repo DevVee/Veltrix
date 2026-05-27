@@ -1,33 +1,46 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Clock, Monitor, Search, Filter, CheckCircle, AlertTriangle, XCircle, Umbrella } from 'lucide-react'
+import { Clock, Monitor, Filter, CheckCircle, AlertTriangle, XCircle, Umbrella, Plus } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
+import { Modal } from '../../components/ui/Modal'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useData } from '../../hooks/useData'
-import { apiGetTodayAttendance, apiGetEmployees } from '../../lib/db'
-
-const STATUS_PILL: Record<string, string> = {
-  present:    'pill pill-green',
-  late:       'pill pill-yellow',
-  absent:     'pill pill-red',
-  'on-leave': 'pill pill-blue',
-  'half-day': 'pill pill-orange',
-}
-const STATUS_LABEL: Record<string, string> = {
-  present: 'Present', late: 'Late', absent: 'Absent',
-  'on-leave': 'On Leave', 'half-day': 'Half Day',
-}
+import { apiGetTodayAttendance, apiGetEmployees, apiAddManualAttendance } from '../../lib/db'
+import { useAuthStore } from '../../store/authStore'
+import type { AttendanceStatus } from '../../types'
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit', hour12:true })
 }
 
+const TODAY = new Date().toISOString().split('T')[0]
+
+const BLANK_FORM = {
+  employeeId: '', date: TODAY, status: 'present' as AttendanceStatus,
+  timeIn: '', timeOut: '', reason: '',
+}
+
+const STAT_CARDS = [
+  { key: 'present', label: 'Present',  iconColor: '#059669', bg: '#ECFDF5', border: '#A7F3D0', icon: CheckCircle },
+  { key: 'late',    label: 'Late',     iconColor: '#D97706', bg: '#FFFBEB', border: '#FDE68A', icon: AlertTriangle },
+  { key: 'absent',  label: 'Absent',   iconColor: '#DC2626', bg: '#FEF2F2', border: '#FECACA', icon: XCircle },
+  { key: 'on-leave',label: 'On Leave', iconColor: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', icon: Umbrella },
+]
+
 export function AttendanceToday() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
 
-  const { data: todayAtt } = useData(() => apiGetTodayAttendance(), [])
-  const { data: employees } = useData(() => apiGetEmployees({ status: 'active' }), [])
+  // Manual entry modal
+  const [manualOpen, setManualOpen] = useState(false)
+  const [form,       setForm]       = useState(BLANK_FORM)
+  const [saving,     setSaving]     = useState(false)
+
+  const { data: todayAtt, refetch } = useData(() => apiGetTodayAttendance(), [])
+  const { data: employees }         = useData(() => apiGetEmployees({ status: 'active' }), [])
 
   const att        = (todayAtt  ?? []).filter(a => a.status !== 'rest-day')
   const employees_ = employees ?? []
@@ -38,6 +51,10 @@ export function AttendanceToday() {
   const onLeave  = att.filter(a => a.status === 'on-leave').length
   const notScanned = employees_.filter(e => !att.find(a => a.employeeId === e.id))
 
+  const COUNTS: Record<string, number> = {
+    present, late, absent, 'on-leave': onLeave,
+  }
+
   const filtered = att.filter(a => {
     const matchSearch = !search || a.employeeName.toLowerCase().includes(search.toLowerCase()) || a.employeeNo.toLowerCase().includes(search.toLowerCase())
     const matchFilter = filter === 'all' || a.status === filter
@@ -46,72 +63,106 @@ export function AttendanceToday() {
 
   const today = new Date().toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
 
+  const needsTime = form.status === 'present' || form.status === 'late' || form.status === 'half-day'
+
+  const saveManual = async () => {
+    if (!form.employeeId || !form.date || !form.reason.trim()) return
+    setSaving(true)
+    try {
+      await apiAddManualAttendance({
+        employeeId: form.employeeId,
+        date:       form.date,
+        status:     form.status,
+        timeIn:     form.timeIn  ? `${form.date}T${form.timeIn}:00` : undefined,
+        timeOut:    form.timeOut ? `${form.date}T${form.timeOut}:00` : undefined,
+        reason:     form.reason,
+      }, user?.name)
+      setManualOpen(false)
+      setForm(BLANK_FORM)
+      refetch()
+    } finally { setSaving(false) }
+  }
+
   return (
     <div className="space-y-4">
       <PageHeader
         title="Today's Attendance"
         subtitle={today}
         actions={[
-          { label: 'Open Kiosk', icon: Monitor, onClick: () => navigate('/kiosk') },
-          { label: 'Full Log',   variant: 'secondary', onClick: () => navigate('/attendance/log') },
+          { label: 'Manual Entry', icon: Plus,    variant: 'secondary', onClick: () => setManualOpen(true) },
+          { label: 'Open Kiosk',   icon: Monitor, onClick: () => navigate('/kiosk') },
+          { label: 'Full Log',     variant: 'secondary', onClick: () => navigate('/attendance/log') },
         ]}
       />
 
-      {/* KPI strip */}
+      {/* ── KPI strip ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: 'Present', value: present, sub: late > 0 ? `${late} arrived late` : 'On time', color: '#15803d', bg: '#f0fdf4', icon: CheckCircle, filterKey: 'present' },
-          { label: 'Late', value: late, sub: late > 0 ? 'Arrived after shift start' : 'None late today', color: '#b45309', bg: '#fefce8', icon: AlertTriangle, filterKey: 'late' },
-          { label: 'Absent', value: absent, sub: absent > 0 ? 'No time-in' : 'All accounted for', color: '#991b1b', bg: '#fef2f2', icon: XCircle, filterKey: 'absent' },
-          { label: 'On Leave', value: onLeave, sub: onLeave > 0 ? 'Approved leave' : 'No leaves today', color: '#1d4ed8', bg: '#eff6ff', icon: Umbrella, filterKey: 'on-leave' },
-        ].map(card => {
-          const isActive = filter === card.filterKey
+        {STAT_CARDS.map(card => {
+          const isActive = filter === card.key
           const Icon = card.icon
+          const value = COUNTS[card.key] ?? 0
           return (
             <button
-              key={card.label}
+              key={card.key}
               type="button"
-              onClick={() => setFilter(isActive ? 'all' : card.filterKey)}
+              onClick={() => setFilter(isActive ? 'all' : card.key)}
               className="card text-left w-full transition-all duration-150"
               style={{
-                padding: '12px 14px',
-                borderColor: isActive ? card.color : '#e4e7ec',
-                background: isActive ? card.bg : '#fff',
+                padding: '14px 16px',
+                borderColor: isActive ? card.border : '#E2E8F0',
+                background:  isActive ? card.bg : '#fff',
+                boxShadow:   isActive ? `0 0 0 3px ${card.border}88` : '0 1px 3px rgba(0,0,0,0.06)',
               }}
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-gray-500 font-semibold uppercase tracking-wide" style={{ fontSize: 10 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   {card.label}
                 </p>
-                <Icon style={{ width: 13, height: 13, color: card.color, opacity: 0.6 }} />
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: 28, height: 28, borderRadius: 8,
+                    background: `${card.iconColor}1A`,
+                  }}
+                >
+                  <Icon style={{ width: 14, height: 14, color: card.iconColor }} />
+                </div>
               </div>
-              <p className="font-black tabular-nums leading-none" style={{ fontSize: 22, color: card.color, letterSpacing: '-0.03em' }}>
-                {card.value}
+              <p style={{ fontSize: 28, fontWeight: 800, color: card.iconColor, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                {value}
               </p>
-              <p className="text-gray-400 mt-1" style={{ fontSize: 10 }}>{card.sub}</p>
+              <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>
+                {card.key === 'present' && (late > 0 ? `${late} arrived late` : 'All on time')}
+                {card.key === 'late'    && (late > 0 ? 'Arrived after shift start' : 'None late today')}
+                {card.key === 'absent'  && (absent > 0 ? 'No time-in recorded' : 'All accounted for')}
+                {card.key === 'on-leave'&& (onLeave > 0 ? 'Approved leave' : 'No leaves today')}
+              </p>
             </button>
           )
         })}
       </div>
 
-      {/* Not yet scanned */}
+      {/* ── Not yet scanned ── */}
       {notScanned.length > 0 && (
         <div className="card p-4">
-          <p className="text-sm font-semibold text-gray-700 mb-2.5 flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-2.5">
             <span
-              className="w-4 h-4 flex items-center justify-center text-[9px] font-bold text-white"
-              style={{ background: '#9CA3AF', borderRadius: '999px' }}
+              className="flex items-center justify-center text-white font-bold"
+              style={{ width: 18, height: 18, borderRadius: 9999, background: '#94A3B8', fontSize: 9 }}
             >
               {notScanned.length}
             </span>
-            Not Yet Scanned
-          </p>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>Not Yet Scanned</span>
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {notScanned.map(e => (
               <span
                 key={e.id}
-                className="text-[11px] font-medium text-gray-500 px-2 py-1"
-                style={{ background: '#F7F8FA', border: '1px solid #EEF0F4', borderRadius: '4px' }}
+                style={{
+                  fontSize: 11, fontWeight: 500, color: '#64748B',
+                  padding: '3px 10px', background: '#F1F5F9',
+                  border: '1px solid #E2E8F0', borderRadius: 9999,
+                }}
               >
                 {e.fullName}
               </span>
@@ -120,43 +171,33 @@ export function AttendanceToday() {
         </div>
       )}
 
-      {/* Filters */}
+      {/* ── Toolbar ── */}
       <div className="card">
-        <div className="flex flex-col sm:flex-row gap-2 px-3 py-2.5">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search employee…"
-              className="input-base pl-8"
-            />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 px-3 py-2.5">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search employee name or ID…"
+            className="flex-1"
+          />
+
+          {/* Filter pills */}
+          <div className="flex items-center gap-1">
+            {(['all', 'present', 'late', 'absent', 'on-leave', 'half-day'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className="filter-pill"
+                style={filter === f ? { background: '#EEF2FF', color: '#4F46E5', borderColor: '#C7D2FE', fontWeight: 600 } : {}}
+              >
+                {f === 'all' ? 'All' : f === 'on-leave' ? 'On Leave' : f === 'half-day' ? 'Half Day' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
           </div>
-          <select
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            className="input-base"
-            style={{ width: '150px' }}
-          >
-            <option value="all">All Status</option>
-            <option value="present">Present</option>
-            <option value="late">Late</option>
-            <option value="absent">Absent</option>
-            <option value="on-leave">On Leave</option>
-            <option value="half-day">Half Day</option>
-          </select>
-          {filter !== 'all' && (
-            <button
-              onClick={() => setFilter('all')}
-              className="text-[11px] text-gray-400 hover:text-gray-600 font-medium"
-            >
-              Clear filter
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Table */}
+      {/* ── Table ── */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="table-base w-full">
@@ -180,42 +221,45 @@ export function AttendanceToday() {
                 return (
                   <tr key={a.id}>
                     <td>
-                      <p className="font-semibold text-gray-900 leading-none" style={{ fontSize: 12.5 }}>{a.employeeName}</p>
-                      <p className="text-gray-400 mt-0.5" style={{ fontSize: 10 }}>{a.employeeNo}</p>
+                      <div className="flex items-center gap-2">
+                        {a.source === 'manual' && (
+                          <span style={{ fontSize: 9, fontWeight: 700, color: '#7C3AED', background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: 4, padding: '1px 5px' }}>
+                            MANUAL
+                          </span>
+                        )}
+                        <div>
+                          <p style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A', lineHeight: 1 }}>{a.employeeName}</p>
+                          <p style={{ fontSize: 10.5, color: '#94A3B8', marginTop: 2 }}>{a.employeeNo}</p>
+                        </div>
+                      </div>
                     </td>
-                    <td>
-                      <span className="tabular-nums text-gray-700" style={{ fontSize: 12 }}>
-                        {a.timeIn ? fmt(a.timeIn) : <span style={{ color: '#d1d5db' }}>—</span>}
-                      </span>
+                    <td className="tabular-nums" style={{ fontSize: 12, color: '#475569' }}>
+                      {a.timeIn ? fmt(a.timeIn) : <span style={{ color: '#CBD5E1' }}>—</span>}
                     </td>
-                    <td>
-                      <span className="tabular-nums text-gray-700" style={{ fontSize: 12 }}>
-                        {a.timeOut ? fmt(a.timeOut) : <span style={{ color: '#d1d5db' }}>—</span>}
-                      </span>
+                    <td className="tabular-nums" style={{ fontSize: 12, color: '#475569' }}>
+                      {a.timeOut ? fmt(a.timeOut) : <span style={{ color: '#CBD5E1' }}>—</span>}
                     </td>
-                    <td className="hidden md:table-cell">
-                      <span className={`tabular-nums ${hours ? 'text-gray-700' : ''}`} style={{ fontSize: 12, color: hours ? undefined : '#d1d5db' }}>
-                        {hours ? `${hours}h` : '—'}
-                      </span>
+                    <td className="hidden md:table-cell tabular-nums" style={{ fontSize: 12, color: hours ? '#475569' : '#CBD5E1' }}>
+                      {hours ? `${hours}h` : '—'}
                     </td>
-                    <td className="hidden md:table-cell">
+                    <td className="hidden md:table-cell tabular-nums">
                       {a.minutesLate > 0 ? (
-                        <span className="tabular-nums font-semibold text-amber-600" style={{ fontSize: 12 }}>{a.minutesLate}m</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#D97706' }}>{a.minutesLate}m</span>
                       ) : (
-                        <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                        <span style={{ fontSize: 12, color: '#CBD5E1' }}>—</span>
                       )}
                     </td>
-                    <td className="hidden lg:table-cell">
+                    <td className="hidden lg:table-cell tabular-nums">
                       {a.overtimeMinutes > 0 ? (
-                        <span className="tabular-nums font-semibold text-brand" style={{ fontSize: 12 }}>{a.overtimeMinutes}m</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#4F46E5' }}>{a.overtimeMinutes}m</span>
                       ) : (
-                        <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                        <span style={{ fontSize: 12, color: '#CBD5E1' }}>—</span>
                       )}
                     </td>
                     <td>
-                      <span className={STATUS_PILL[a.status] ?? 'pill pill-gray'}>
-                        {STATUS_LABEL[a.status] ?? a.status}
-                      </span>
+                      <StatusBadge type="attendance" status={a.status}>
+                        {a.status === 'on-leave' ? 'On Leave' : a.status === 'half-day' ? 'Half Day' : a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+                      </StatusBadge>
                     </td>
                   </tr>
                 )
@@ -223,9 +267,9 @@ export function AttendanceToday() {
 
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center">
-                    <Clock className="w-8 h-8 mx-auto mb-2" style={{ color: '#E2E5EB' }} />
-                    <p className="text-sm text-gray-400">No records match your filter</p>
+                  <td colSpan={7} className="py-14 text-center">
+                    <Clock style={{ width: 32, height: 32, color: '#E2E8F0', margin: '0 auto 8px' }} />
+                    <p style={{ fontSize: 13, color: '#94A3B8' }}>No records match your filter</p>
                   </td>
                 </tr>
               )}
@@ -235,22 +279,129 @@ export function AttendanceToday() {
 
         <div
           className="flex items-center justify-between px-4 py-2"
-          style={{ borderTop: '1px solid #EEF0F4', background: '#FAFBFC' }}
+          style={{ borderTop: '1px solid #F1F5F9', background: '#FAFBFC' }}
         >
           <div className="flex items-center gap-1.5">
-            <Filter className="w-3 h-3 text-gray-300" />
-            <span className="text-[11px] text-gray-400">
+            <Filter style={{ width: 11, height: 11, color: '#CBD5E1' }} />
+            <span style={{ fontSize: 11, color: '#94A3B8' }}>
               {filtered.length} of {att.length} records
             </span>
           </div>
           <button
             onClick={() => navigate('/kiosk')}
-            className="text-[11px] text-brand font-semibold hover:underline"
+            style={{ fontSize: 11, color: '#4F46E5', fontWeight: 600 }}
+            className="hover:underline"
           >
             Open Kiosk →
           </button>
         </div>
       </div>
+
+      {/* ── Manual Entry Modal ── */}
+      <Modal
+        open={manualOpen}
+        onClose={() => { setManualOpen(false); setForm(BLANK_FORM) }}
+        title="Manual Attendance Entry"
+        footer={
+          <>
+            <button onClick={() => { setManualOpen(false); setForm(BLANK_FORM) }} className="btn btn-secondary">
+              Cancel
+            </button>
+            <button
+              onClick={saveManual}
+              disabled={saving || !form.employeeId || !form.date || !form.reason.trim()}
+              className="btn btn-primary"
+            >
+              {saving ? 'Saving…' : 'Save Entry'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div
+            className="px-3 py-2.5"
+            style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 8, fontSize: 12, color: '#92400E' }}
+          >
+            Use this for employees who were present but forgot to scan the RFID kiosk. This entry will be marked as manually added in the audit log.
+          </div>
+
+          <div>
+            <label className="form-label">Employee <span className="text-red-500">*</span></label>
+            <select
+              className="input-base"
+              value={form.employeeId}
+              onChange={e => setForm(f => ({ ...f, employeeId: e.target.value }))}
+            >
+              <option value="">— Select employee —</option>
+              {employees_.map(e => (
+                <option key={e.id} value={e.id}>{e.fullName} ({e.employeeNo})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="form-label">Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                className="input-base"
+                value={form.date}
+                onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="form-label">Status <span className="text-red-500">*</span></label>
+              <select
+                className="input-base"
+                value={form.status}
+                onChange={e => setForm(f => ({ ...f, status: e.target.value as AttendanceStatus }))}
+              >
+                <option value="present">Present</option>
+                <option value="late">Late</option>
+                <option value="absent">Absent</option>
+                <option value="half-day">Half Day</option>
+                <option value="on-leave">On Leave</option>
+              </select>
+            </div>
+          </div>
+
+          {needsTime && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="form-label">Time In</label>
+                <input
+                  type="time"
+                  className="input-base"
+                  value={form.timeIn}
+                  onChange={e => setForm(f => ({ ...f, timeIn: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="form-label">
+                  Time Out <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>(optional)</span>
+                </label>
+                <input
+                  type="time"
+                  className="input-base"
+                  value={form.timeOut}
+                  onChange={e => setForm(f => ({ ...f, timeOut: e.target.value }))}
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="form-label">Admin Note / Reason <span className="text-red-500">*</span></label>
+            <textarea
+              className="input-base"
+              style={{ height: 72, resize: 'none', paddingTop: 8, paddingBottom: 8 }}
+              placeholder="e.g. Employee was present but forgot to scan RFID badge"
+              value={form.reason}
+              onChange={e => setForm(f => ({ ...f, reason: e.target.value }))}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

@@ -584,6 +584,59 @@ export async function apiCorrectAttendance(id: string, data: Partial<AttendanceR
   return list[idx]
 }
 
+// ─── Manual Attendance ────────────────────────────────────────────────────────
+export async function apiAddManualAttendance(
+  data: { employeeId:string; date:string; timeIn?:string; timeOut?:string; status:AttendanceRecord['status']; reason:string },
+  by?: string
+): Promise<AttendanceRecord> {
+  await delay()
+  const employees = ls<Employee>(K.employees)
+  const employee  = employees.find(e => e.id === data.employeeId)
+  if (!employee) throw new Error('Employee not found')
+
+  const shifts = ls<WorkShift>(K.shifts)
+  const shift  = shifts.find(s => s.id === employee.shiftId)
+
+  // Compute minutesLate if timeIn provided
+  let minutesLate = 0
+  if (data.timeIn && shift && (data.status === 'present' || data.status === 'late')) {
+    const [sh, sm] = shift.timeIn.split(':').map(Number)
+    const grace   = new Date(data.timeIn)
+    const deadline = new Date(grace); deadline.setHours(sh, sm + shift.graceMinutes, 0, 0)
+    const tin = new Date(data.timeIn)
+    if (tin > deadline) minutesLate = Math.round((tin.getTime() - deadline.getTime()) / 60000)
+  }
+
+  const list = ls<AttendanceRecord>(K.attendance)
+  const existing = list.findIndex(a => a.employeeId === data.employeeId && a.date === data.date)
+
+  const rec: AttendanceRecord = {
+    id:              existing >= 0 ? list[existing].id : `att_manual_${Date.now()}`,
+    employeeId:      employee.id,
+    employeeName:    employee.fullName,
+    employeeNo:      employee.employeeNo,
+    department:      employee.department,
+    date:            data.date,
+    timeIn:          data.timeIn,
+    timeOut:         data.timeOut,
+    status:          data.status,
+    minutesLate,
+    overtimeMinutes: 0,
+    nightDiffMinutes:0,
+    source:          'manual',
+    correctedBy:     by ?? 'Admin',
+    correctionReason:data.reason,
+  }
+
+  if (existing >= 0) list[existing] = rec
+  else list.push(rec)
+  lsSet(K.attendance, list)
+
+  pushAudit({ userId:'sys', userName:by??'Admin', action:'create', module:'Attendance',
+    description:`Manual attendance entry for ${employee.fullName} on ${data.date} (${data.status}) — ${data.reason}` })
+  return rec
+}
+
 // ─── Kiosk PIN ────────────────────────────────────────────────────────────────
 export async function apiKioskPIN(pin: string): Promise<{ type:'time-in'|'time-out'; employee: Employee; message: string }> {
   await delay()

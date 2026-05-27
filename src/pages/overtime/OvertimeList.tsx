@@ -1,19 +1,15 @@
 import { useState } from 'react'
-import { Clock, CheckCircle, XCircle, Search } from 'lucide-react'
+import { Clock, CheckCircle, XCircle } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { Modal } from '../../components/ui/Modal'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ActionIconBtn } from '../../components/ui/ActionIconBtn'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useData } from '../../hooks/useData'
 import { apiGetOvertime, apiUpdateOvertimeStatus } from '../../lib/db'
 import { useAuthStore } from '../../store/authStore'
 import type { OvertimeRequest } from '../../types'
-
-const STATUS_PILL: Record<string, string> = {
-  pending:  'pill pill-yellow',
-  approved: 'pill pill-green',
-  rejected: 'pill pill-red',
-}
 
 export function OvertimeList() {
   const user = useAuthStore(s => s.user)
@@ -60,46 +56,48 @@ export function OvertimeList() {
         subtitle="Review and approve employee overtime"
       />
 
-      {/* Summary */}
+      {/* ── Summary strip ── */}
       <div
-        className="grid grid-cols-3 divide-x divide-gray-100 bg-white"
-        style={{ border: '1px solid #E2E5EB', borderRadius: '6px' }}
+        className="grid grid-cols-3 bg-white"
+        style={{ border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden' }}
       >
         {[
-          { label: 'Pending',           value: pending,              color: '#B45309' },
-          { label: 'Approved',          value: approved,             color: '#15803D' },
-          { label: 'Total OT Hours',    value: `${totalHrs.toFixed(1)}h`, color: '#1565C0' },
-        ].map(s => (
-          <div key={s.label} className="px-4 py-2.5">
-            <p className="text-[18px] font-bold tabular-nums" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mt-0.5">{s.label}</p>
+          { label: 'Pending',        value: pending,                  color: '#D97706' },
+          { label: 'Approved',       value: approved,                 color: '#059669' },
+          { label: 'Total OT Hours', value: `${totalHrs.toFixed(1)}h`, color: '#4F46E5' },
+        ].map((s, i) => (
+          <div key={s.label} className="px-4 py-3" style={{ borderLeft: i > 0 ? '1px solid #F1F5F9' : 'none' }}>
+            <p style={{ fontSize: 22, fontWeight: 800, color: s.color, letterSpacing: '-0.04em', lineHeight: 1 }} className="tabular-nums">
+              {s.value}
+            </p>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4 }}>
+              {s.label}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Filters */}
       <div className="card">
-        <div className="flex flex-wrap gap-2 px-3 py-2.5">
-          <div className="relative flex-1 min-w-40">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search employee…"
-              className="input-base pl-8"
-            />
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search employee…"
+            className="flex-1"
+          />
+          <div className="flex items-center gap-1">
+            {(['all','pending','approved','rejected'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className="filter-pill"
+                style={statusFilter === s ? { background: '#EEF2FF', color: '#4F46E5', borderColor: '#C7D2FE', fontWeight: 600 } : {}}
+              >
+                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
           </div>
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="input-base"
-            style={{ width: '130px' }}
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
         </div>
       </div>
 
@@ -154,7 +152,9 @@ export function OvertimeList() {
                         <span className="text-sm text-gray-500 line-clamp-1">{r.reason}</span>
                       </td>
                       <td>
-                        <span className={STATUS_PILL[r.status] ?? 'pill pill-gray'}>{r.status}</span>
+                        <StatusBadge type="overtime" status={r.status}>
+                          {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                        </StatusBadge>
                       </td>
                       <td className="hidden md:table-cell">
                         <span className="text-[11px] text-gray-400 tabular-nums">
@@ -214,7 +214,7 @@ export function OvertimeList() {
           <div className="space-y-4">
             <div
               className="p-3"
-              style={{ background: '#F7F8FA', border: '1px solid #EEF0F4', borderRadius: '4px' }}
+              style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8 }}
             >
               <p className="text-sm font-semibold text-gray-800">{acting.employeeName}</p>
               <p className="text-[11px] text-gray-500 mt-0.5">

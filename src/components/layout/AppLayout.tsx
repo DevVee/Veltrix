@@ -7,15 +7,15 @@ export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-app)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
       <Sidebar collapsed={collapsed} />
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-200
-          ${collapsed ? 'ml-[56px]' : 'ml-[220px]'}`}
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300
+          ${collapsed ? 'ml-[64px]' : 'ml-[240px]'}`}
       >
         <TopBar onToggle={() => setCollapsed(v => !v)} collapsed={collapsed} />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-5 max-w-[1440px] mx-auto page-enter">
+          <div className="p-6 max-w-[1440px] mx-auto page-enter">
             <Outlet />
           </div>
         </main>

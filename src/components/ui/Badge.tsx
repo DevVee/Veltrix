@@ -1,4 +1,4 @@
-type Variant = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo' | 'orange'
+type Variant = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo' | 'orange' | 'teal' | 'pink' | 'amber'
 
 const PILL_CLASS: Record<Variant, string> = {
   blue:   'pill pill-blue',
@@ -9,6 +9,9 @@ const PILL_CLASS: Record<Variant, string> = {
   purple: 'pill pill-purple',
   indigo: 'pill pill-indigo',
   orange: 'pill pill-orange',
+  teal:   'pill pill-teal',
+  pink:   'pill pill-pink',
+  amber:  'pill pill-amber',
 }
 
 export function Badge({ variant = 'gray', children }: { variant?: Variant; children: React.ReactNode }) {
